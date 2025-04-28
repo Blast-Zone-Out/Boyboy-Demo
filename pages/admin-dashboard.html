@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="../css/global.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Admin Dashboard</h1>
+    <button id="logoutBtn">Logout</button>
+    <section>
+      <h2>Student Registration Requests</h2>
+      <div id="registrationRequests"></div>
+    </section>
+    <section>
+      <h2>System Overview</h2>
+      <div id="systemOverview"></div>
+      <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+      <h2>Student Progress</h2>
+      <div id="studentProgressList"></div>
+    </section>
+  </div>
+
+  <script>
+    // Check if user is admin
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (!currentUser || currentUser.role !== 'admin') {
+      alert('Access denied. Please login as Admin.');
+      window.location.href = '../index.html';
+    }
+
+    const logoutBtn = document.getElementById('logoutBtn');
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('currentUser');
+      window.location.href = '../index.html';
+    });
+
+    // Load registration requests from localStorage
+    function loadRegistrationRequests() {
+      return JSON.parse(localStorage.getItem('registrationRequests')) || [];
+    }
+
+    // Save registration requests to localStorage
+    function saveRegistrationRequests(requests) {
+      localStorage.setItem('registrationRequests', JSON.stringify(requests));
+    }
+
+    // Render registration requests
+    function renderRegistrationRequests() {
+      const container = document.getElementById('registrationRequests');
+      const requests = loadRegistrationRequests();
+      container.innerHTML = '';
+      if (requests.length === 0) {
+        container.textContent = 'No registration requests.';
+        return;
+      }
+      requests.forEach((req, index) => {
+        const div = document.createElement('div');
+        div.style.border = '1px solid #ccc';
+        div.style.padding = '0.5rem';
+        div.style.marginBottom = '0.5rem';
+        div.innerHTML = `
+          <p><strong>Student:</strong> ${req.username} (Grade ${req.grade})</p>
+          <button data-index="${index}" class="acceptBtn">Accept</button>
+          <button data-index="${index}" class="declineBtn">Decline</button>
+        `;
+        container.appendChild(div);
+      });
+
+      // Add event listeners for buttons
+      document.querySelectorAll('.acceptBtn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const idx = e.target.getAttribute('data-index');
+          acceptRequest(idx);
+        });
+      });
+      document.querySelectorAll('.declineBtn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const idx = e.target.getAttribute('data-index');
+          declineRequest(idx);
+        });
+      });
+    }
+
+    // Accept registration request
+    function acceptRequest(index) {
+      const requests = loadRegistrationRequests();
+      const students = JSON.parse(localStorage.getItem('students')) || [];
+      const acceptedStudent = requests.splice(index, 1)[0];
+      students.push(acceptedStudent);
+      localStorage.setItem('students', JSON.stringify(students));
+      saveRegistrationRequests(requests);
+      renderRegistrationRequests();
+      renderSystemOverview();
+      alert('Student registration accepted.');
+    }
+
+    // Decline registration request
+    function declineRequest(index) {
+      const requests = loadRegistrationRequests();
+      requests.splice(index, 1);
+      saveRegistrationRequests(requests);
+      renderRegistrationRequests();
+      alert('Student registration declined.');
+    }
+
+    // Render system overview
+    function renderSystemOverview() {
+      const container = document.getElementById('systemOverview');
+      const students = JSON.parse(localStorage.getItem('students')) || [];
+      const modules = JSON.parse(localStorage.getItem('modules')) || [];
+      const progress = JSON.parse(localStorage.getItem('progress')) || {};
+
+      container.innerHTML = `
+        <p>Total Students: ${students.length}</p>
+        <p>Total Modules: ${modules.length}</p>
+        <p>Total Progress Records: ${Object.keys(progress).length}</p>
+      `;
+
+      // Calculate overall progress percentage
+      let totalProgress = 0;
+      let count = 0;
+      for (const studentId in progress) {
+        const studentProgress = progress[studentId];
+        for (const moduleId in studentProgress) {
+          const moduleProgress = studentProgress[moduleId];
+          if (moduleProgress.completed) {
+            totalProgress += 1;
+          } else {
+            const moduleData = modules.find(m => m.id == moduleId);
+            const totalQuestions = moduleData ? moduleData.questions.length : 0;
+            if (totalQuestions > 0) {
+              totalProgress += (moduleProgress.currentQuestionIndex / totalQuestions);
+            }
+          }
+          count++;
+        }
+      }
+      const overallProgress = count > 0 ? (totalProgress / count) : 0;
+
+      // Update progress bar width
+      const progressBar = document.getElementById('progressBar');
+      if (progressBar) {
+        progressBar.style.width = (overallProgress * 100) + '%';
+      }
+
+      renderStudentProgressList(students, progress, modules);
+    }
+
+    // Initial render
+    renderRegistrationRequests();
+    renderSystemOverview();
+
+    // Render student progress list
+    function renderStudentProgressList(students, progress, modules) {
+      const container = document.getElementById('studentProgressList');
+      container.innerHTML = '';
+      if (students.length === 0) {
+        container.textContent = 'No students registered.';
+        return;
+      }
+
+      students.forEach(student => {
+        const studentProgress = progress[student.username] || {};
+        let totalModules = modules.length;
+        let completedModules = 0;
+        let totalProgressPercent = 0;
+
+        modules.forEach(module => {
+          const moduleProgress = studentProgress[module.id];
+          if (moduleProgress) {
+            if (moduleProgress.completed) {
+              completedModules++;
+              totalProgressPercent += 100;
+            } else {
+              const totalQuestions = module.questions ? module.questions.length : 0;
+              if (totalQuestions > 0) {
+                totalProgressPercent += (moduleProgress.currentQuestionIndex / totalQuestions) * 100;
+              }
+            }
+          }
+        });
+
+        const averageProgress = totalModules > 0 ? (totalProgressPercent / totalModules) : 0;
+
+        const div = document.createElement('div');
+        div.style.border = '1px solid #ccc';
+        div.style.padding = '0.5rem';
+        div.style.marginBottom = '0.5rem';
+        div.innerHTML = `
+          <p><strong>${student.username}</strong> (Grade ${student.grade})</p>
+          <p>Progress: ${averageProgress.toFixed(2)}%</p>
+          <div class="progress-container" style="width: 100%; background: #eee; height: 10px; border-radius: 5px;">
+            <div class="progress-bar" style="width: ${averageProgress}%; height: 10px; background: #4caf50; border-radius: 5px;"></div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+  </script>
+</body>
+</html>

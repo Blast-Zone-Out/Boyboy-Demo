@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Manage Module Questions</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Manage Module Questions</h1>
+    <button id="backBtn">Back to Teacher Dashboard</button>
+    <h2 id="moduleTitle"></h2>
+    <form id="addQuestionForm">
+      <label for="questionText">Question Text:</label>
+      <textarea id="questionText" name="questionText" rows="3" required></textarea>
+      <label for="questionAnswer">Answer:</label>
+      <input type="text" id="questionAnswer" name="questionAnswer" required />
+      <label for="questionHint">Hint (optional):</label>
+      <input type="text" id="questionHint" name="questionHint" />
+      <button type="submit">Add Question</button>
+    </form>
+    <div id="questionsList"></div>
+  </div>
+
+  <script>
+    // Check if user is teacher
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (!currentUser || currentUser.role !== 'teacher') {
+      alert('Access denied. Please login as Teacher.');
+      window.location.href = '../index.html';
+    }
+
+    const backBtn = document.getElementById('backBtn');
+    backBtn.addEventListener('click', () => {
+      window.location.href = 'teacher-dashboard.html';
+    });
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const moduleId = urlParams.get('moduleId');
+
+    let modules = JSON.parse(localStorage.getItem('modules')) || [];
+    let module = modules.find(m => m.id == moduleId);
+
+    if (!module) {
+      alert('Module not found.');
+      window.location.href = 'teacher-dashboard.html';
+    }
+
+    // Ensure module.questions is initialized
+    if (!module.questions) {
+      module.questions = [];
+    }
+
+    const moduleTitle = document.getElementById('moduleTitle');
+    const addQuestionForm = document.getElementById('addQuestionForm');
+    const questionsList = document.getElementById('questionsList');
+
+    moduleTitle.textContent = `${module.title} (Grade ${module.grade})`;
+
+    function renderQuestions() {
+      questionsList.innerHTML = '';
+      if (module.questions.length === 0) {
+        questionsList.textContent = 'No questions added yet.';
+        return;
+      }
+      module.questions.forEach((q, index) => {
+        const div = document.createElement('div');
+        div.style.border = '1px solid #ccc';
+        div.style.padding = '0.5rem';
+        div.style.marginBottom = '0.5rem';
+        div.innerHTML = `
+          <p><strong>Q${index + 1}:</strong> ${q.text}</p>
+          <p><strong>Answer:</strong> ${q.answer}</p>
+          <p><strong>Hint:</strong> ${q.hint || 'None'}</p>
+          <button data-index="${index}" class="deleteQuestionBtn">Delete</button>
+        `;
+        questionsList.appendChild(div);
+      });
+
+      document.querySelectorAll('.deleteQuestionBtn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const idx = e.target.getAttribute('data-index');
+          deleteQuestion(idx);
+        });
+      });
+    }
+
+    function saveModules() {
+      localStorage.setItem('modules', JSON.stringify(modules));
+    }
+
+    addQuestionForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const text = document.getElementById('questionText').value.trim();
+      const answer = document.getElementById('questionAnswer').value.trim();
+      const hint = document.getElementById('questionHint').value.trim();
+
+      if (!text || !answer) {
+        alert('Please fill in question text and answer.');
+        return;
+      }
+
+      module.questions.push({ text, answer, hint });
+      saveModules();
+      renderQuestions();
+      addQuestionForm.reset();
+    });
+
+    function deleteQuestion(index) {
+      module.questions.splice(index, 1);
+      saveModules();
+      renderQuestions();
+    }
+
+    renderQuestions();
+  </script>
+</body>
+</html>

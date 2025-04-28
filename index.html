@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Learning Platform - Login</title>
+  <link rel="stylesheet" href="css/global.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <img src="owl remove.png" alt="">
+    </div>
+    <h1>MathVentures</h1>
+    <form id="loginForm">
+      <label for="role">Select Role:</label>
+      <select id="role" name="role" required>
+        <option value="" disabled selected>Select your role</option>
+        <option value="admin">Admin</option>
+        <option value="teacher">Teacher</option>
+        <option value="student">Student</option>
+      </select>
+
+      <div id="studentSelectContainer" style="display:none;">
+        <label for="studentSelect">Select Student Account:</label>
+        <select id="studentSelect" name="studentSelect"></select>
+      </div>
+
+      <label for="password">Password:</label>
+      <input type="password" id="password" name="password" required />
+
+      <button type="submit">Login</button>
+    </form>
+    <div id="loginMessage"></div>
+  </div>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

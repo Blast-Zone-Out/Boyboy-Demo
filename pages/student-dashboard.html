@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Student Dashboard</title>
+  <link rel="stylesheet" href="../css/global.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Student Dashboard</h1>
+    <button id="logoutBtn">Logout</button>
+
+    <section>
+      <h2>Available Modules</h2>
+      <div id="modulesList"></div>
+      <div id="progressSummary" style="margin-top: 1rem;"></div>
+    </section>
+
+    <section>
+      <h2>Current Module</h2>
+      <div id="currentModuleContainer" style="display:none;">
+        <h3 id="currentModuleTitle"></h3>
+        <p id="currentModuleDescription"></p>
+        <div id="questionContainer"></div>
+        <button id="nextQuestionBtn">Next Question</button>
+        <div id="hintContainer" style="color: #d9534f; margin-top: 1rem;"></div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // Check if user is student
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (!currentUser || currentUser.role !== 'student') {
+      alert('Access denied. Please login as Student.');
+      window.location.href = '../index.html';
+    }
+
+    const logoutBtn = document.getElementById('logoutBtn');
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('currentUser');
+      window.location.href = '../index.html';
+    });
+
+    const modulesList = document.getElementById('modulesList');
+    const currentModuleContainer = document.getElementById('currentModuleContainer');
+    const currentModuleTitle = document.getElementById('currentModuleTitle');
+    const currentModuleDescription = document.getElementById('currentModuleDescription');
+    const questionContainer = document.getElementById('questionContainer');
+    const nextQuestionBtn = document.getElementById('nextQuestionBtn');
+    const hintContainer = document.getElementById('hintContainer');
+
+    let modules = JSON.parse(localStorage.getItem('modules')) || [];
+    let progress = JSON.parse(localStorage.getItem('progress')) || {};
+    let currentModuleId = null;
+    let currentQuestionIndex = 0;
+    let currentUserProgress = progress[currentUser.username] || {};
+
+    // Filter modules by student's grade level
+    const students = JSON.parse(localStorage.getItem('students')) || [];
+    const studentInfo = students.find(s => s.username === currentUser.username);
+    const studentGrade = studentInfo ? studentInfo.grade : null;
+
+    function filterModulesByGrade() {
+      // For simplicity, all modules are available to all grades in this version
+      return modules;
+    }
+
+    function renderModulesList() {
+      const filteredModules = filterModulesByGrade();
+      modulesList.innerHTML = '';
+      if (filteredModules.length === 0) {
+        modulesList.textContent = 'No modules available.';
+        return;
+      }
+      filteredModules.forEach(module => {
+        const div = document.createElement('div');
+        div.style.border = '1px solid #ccc';
+        div.style.padding = '0.5rem';
+        div.style.marginBottom = '0.5rem';
+
+        // Calculate progress for this module for current user
+        const userModuleProgress = currentUserProgress[module.id];
+        let progressPercent = 0;
+        if (userModuleProgress) {
+          const totalQuestions = module.questions ? module.questions.length : 0;
+          if (totalQuestions > 0) {
+            if (userModuleProgress.completed) {
+              progressPercent = 100;
+            } else {
+              progressPercent = Math.floor((userModuleProgress.currentQuestionIndex / totalQuestions) * 100);
+            }
+          }
+        }
+
+        div.innerHTML = `
+          <h3>${module.title}</h3>
+          <p>${module.description}</p>
+          <p>Progress: ${progressPercent}%</p>
+          <button data-id="${module.id}" class="startModuleBtn">Start Module</button>
+        `;
+        modulesList.appendChild(div);
+      });
+
+      document.querySelectorAll('.startModuleBtn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const moduleId = e.target.getAttribute('data-id');
+          startModule(moduleId);
+        });
+      });
+    }
+
+    function startModule(moduleId) {
+      currentModuleId = moduleId;
+      currentQuestionIndex = currentUserProgress[moduleId]?.currentQuestionIndex || 0;
+      currentModuleContainer.style.display = 'block';
+      renderCurrentModule();
+      renderCurrentQuestion();
+    }
+
+    function renderCurrentModule() {
+      const module = modules.find(m => m.id == currentModuleId);
+      if (!module) return;
+      currentModuleTitle.textContent = module.title;
+      currentModuleDescription.textContent = module.description;
+    }
+
+    function renderCurrentQuestion() {
+      const module = modules.find(m => m.id == currentModuleId);
+      if (!module) return;
+      const questions = module.questions || [];
+      if (currentQuestionIndex >= questions.length) {
+        questionContainer.innerHTML = '<p>Module completed! Congratulations!</p>';
+        nextQuestionBtn.style.display = 'none';
+        hintContainer.textContent = '';
+        saveProgress(true);
+        return;
+      }
+      const question = questions[currentQuestionIndex];
+      questionContainer.innerHTML = `
+        <p><strong>Question ${currentQuestionIndex + 1}:</strong> ${question.text}</p>
+        <input type="text" id="answerInput" placeholder="Your answer" />
+      `;
+      nextQuestionBtn.style.display = 'inline-block';
+      hintContainer.textContent = '';
+    }
+
+    function saveProgress(completed = false) {
+      if (!progress[currentUser.username]) {
+        progress[currentUser.username] = {};
+      }
+      progress[currentUser.username][currentModuleId] = {
+        currentQuestionIndex,
+        completed
+      };
+      localStorage.setItem('progress', JSON.stringify(progress));
+    }
+
+    nextQuestionBtn.addEventListener('click', () => {
+      const answerInput = document.getElementById('answerInput');
+      if (!answerInput) return;
+      const userAnswer = answerInput.value.trim();
+      if (!userAnswer) {
+        hintContainer.textContent = 'Please enter an answer before proceeding.';
+        return;
+      }
+      const module = modules.find(m => m.id == currentModuleId);
+      if (!module) return;
+      const question = module.questions[currentQuestionIndex];
+      if (!question) return;
+
+      // Simple AI hint system: if answer is incorrect, show hint and do not advance
+      if (userAnswer.toLowerCase() !== question.answer.toLowerCase()) {
+        hintContainer.textContent = 'Hint: ' + (question.hint || 'Try reviewing the material again.');
+        return;
+      }
+
+      // Correct answer: advance to next question
+      currentQuestionIndex++;
+      saveProgress();
+      renderCurrentQuestion();
+    });
+
+    // Initial render
+    renderModulesList();
+  </script>
+</body>
+</html>
