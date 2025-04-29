@@ -58,46 +58,59 @@ document.addEventListener('DOMContentLoaded', () => {
   // Handle login form submission
   loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
+    const loader = document.getElementById('loader');
+    loader.style.display = 'block'; // Show loader
+  
     const role = roleSelect.value;
     const password = document.getElementById('password').value.trim();
-
+  
     if (!role) {
       loginMessage.textContent = 'Please select a role.';
+      loader.style.display = 'none';
       return;
     }
-
-    if (role === 'admin') {
-      if (password === adminAccount.password) {
-        localStorage.setItem('currentUser', JSON.stringify({ role: 'admin', username: 'admin' }));
-        window.location.href = 'pages/admin-dashboard.html';
-      } else {
-        loginMessage.textContent = 'Incorrect password for Admin.';
+  
+    setTimeout(() => {  // Simulate delay, replace with actual async if needed
+      if (role === 'admin') {
+        if (password === adminAccount.password) {
+          localStorage.setItem('currentUser', JSON.stringify({ role: 'admin', username: 'admin' }));
+          window.location.href = 'pages/admin-dashboard.html';
+        } else {
+          loginMessage.textContent = 'Incorrect password for Admin.';
+          loader.style.display = 'none';
+        }
+      } else if (role === 'teacher') {
+        if (password === teacherAccount.password) {
+          localStorage.setItem('currentUser', JSON.stringify({ role: 'teacher', username: 'teacher' }));
+          window.location.href = 'pages/teacher-dashboard.html';
+        } else {
+          loginMessage.textContent = 'Incorrect password for Teacher.';
+          loader.style.display = 'none';
+        }
+      } else if (role === 'student') {
+        const selectedStudent = studentSelect.value;
+        if (!selectedStudent) {
+          loginMessage.textContent = 'Please select a student account.';
+          loader.style.display = 'none';
+          return;
+        }
+  
+        const students = loadStudents();
+        const student = students.find(s => s.username === selectedStudent);
+        if (!student) {
+          loginMessage.textContent = 'Selected student account not found.';
+          loader.style.display = 'none';
+          return;
+        }
+  
+        if (password === student.password) {
+          localStorage.setItem('currentUser', JSON.stringify({ role: 'student', username: student.username }));
+          window.location.href = 'pages/student-dashboard.html';
+        } else {
+          loginMessage.textContent = 'Incorrect password for Student.';
+          loader.style.display = 'none';
+        }
       }
-    } else if (role === 'teacher') {
-      if (password === teacherAccount.password) {
-        localStorage.setItem('currentUser', JSON.stringify({ role: 'teacher', username: 'teacher' }));
-        window.location.href = 'pages/teacher-dashboard.html';
-      } else {
-        loginMessage.textContent = 'Incorrect password for Teacher.';
-      }
-    } else if (role === 'student') {
-      const selectedStudent = studentSelect.value;
-      if (!selectedStudent) {
-        loginMessage.textContent = 'Please select a student account.';
-        return;
-      }
-      const students = loadStudents();
-      const student = students.find(s => s.username === selectedStudent);
-      if (!student) {
-        loginMessage.textContent = 'Selected student account not found.';
-        return;
-      }
-      if (password === student.password) {
-        localStorage.setItem('currentUser', JSON.stringify({ role: 'student', username: student.username }));
-        window.location.href = 'pages/student-dashboard.html';
-      } else {
-        loginMessage.textContent = 'Incorrect password for Student.';
-      }
-    }
+    }, 500); // Optional delay for showing the loader animation
   });
 });
