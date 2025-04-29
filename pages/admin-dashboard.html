@@ -4,25 +4,108 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Admin Dashboard</title>
-  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="stylesheet" href="../css/admin-dashboard-modern.css" />
 </head>
 <body>
-  <div class="container">
+  <header>
+    <div class="header-left">
+      <div class="logo-icon" aria-label="Book icon" title="Book icon">📚</div>
+      <div class="brand-name">MathVenture</div>
+    </div>
+    <div class="header-center">
+      <nav>
+        <a href="#">Dashboard</a>
+        <a href="#">Learn</a>
+        <a href="#">Practice</a>
+        <a href="#">Analytics</a>
+      </nav>
+    </div>
+    <div class="header-right">
+      <div id="userAvatar" class="user-avatar" aria-label="User avatar" title="User avatar">AJ</div>
+      <div id="username" class="username">Alex Johnson</div>
+      <div id="gradeBadge" class="grade-badge">Grade 5</div>
+      <div id="logoutBtn" class="logout" role="button" tabindex="0" aria-label="Logout">Logout</div>
+    </div>
+  </header>
+  <main>
     <h1>Admin Dashboard</h1>
-    <button id="logoutBtn">Logout</button>
-    <section>
-      <h2>Student Registration Requests</h2>
-      <div id="registrationRequests"></div>
-    </section>
-    <section>
-      <h2>System Overview</h2>
-      <div id="systemOverview"></div>
-      <div class="progress-container">
-        <div class="progress-bar" id="progressBar"></div>
+    <div class="summary-cards">
+      <div class="card blue">
+        <div class="icon" aria-label="Total Students icon" title="Total Students">👥</div>
+        <div class="text">
+          <div class="label">Total Students</div>
+          <div class="value" id="totalStudents">150</div>
+        </div>
       </div>
-      <h2>Student Progress</h2>
-      <div id="studentProgressList"></div>
-    </section>
+      <div class="card purple">
+        <div class="icon" aria-label="Total Modules icon" title="Total Modules">📚</div>
+        <div class="text">
+          <div class="label">Total Modules</div>
+          <div class="value" id="totalModules">0</div>
+        </div>
+      </div>
+      <div class="card green">
+        <div class="icon" aria-label="Active Classes icon" title="Active Classes">🏫</div>
+        <div class="text">
+          <div class="label">Active Classes</div>
+          <div class="value" id="activeClasses">12</div>
+        </div>
+      </div>
+      <div class="card orange">
+        <div class="icon" aria-label="Average Score icon" title="Average Score">📊</div>
+        <div class="text">
+          <div class="label">Average Score</div>
+          <div class="value" id="averageScore">78%</div>
+        </div>
+      </div>
+    </div>
+    <div class="panels">
+      <section class="panel recent-activities" aria-label="Recent Activities">
+        <h2>Recent Activities</h2>
+        <div id="recentActivitiesList">
+          <div class="activity">New teacher registered by Sarah Wilson — 2 hours ago</div>
+          <div class="activity">New class created by John Smith — 4 hours ago</div>
+          <div class="activity">Student enrollment by Emma Davis — 1 day ago</div>
+        </div>
+        <h3>Pending Student Registrations</h3>
+        <div id="registrationRequestsContainer"></div>
+      </section>
+      <section class="panel quick-actions" aria-label="Quick Actions">
+        <h2>Quick Actions</h2>
+        <div class="quick-action-btn" role="button" tabindex="0" aria-label="Add New Teacher">
+          <div class="icon">📘</div>
+          <div>Add New Teacher</div>
+        </div>
+      <div class="quick-action-btn" role="button" tabindex="0" aria-label="Manage Classes" id="manageClassesBtn">
+        <div class="icon">👨‍🏫</div>
+        <div>Manage Classes</div>
+      </div>
+      <div class="quick-action-btn" role="button" tabindex="0" aria-label="Student Enrollment">
+        <div class="icon">🏫</div>
+        <div>Student Enrollment</div>
+      </div>
+        <div class="quick-action-btn" role="button" tabindex="0" aria-label="View Reports">
+          <div class="icon">📈</div>
+          <div>View Reports</div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div id="studentListContainer" style="display:none; padding: 1rem; border: 1px solid #ccc; margin: 1rem; background: #f9f9f9;">
+    <h2>Students List <button id="closeStudentListBtn" style="float:right;">Close</button></h2>
+    <table id="studentListTable" border="1" cellpadding="5" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Grade</th>
+          <th>Last Login</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Student rows will be inserted here -->
+      </tbody>
+    </table>
   </div>
 
   <script>
@@ -39,6 +122,57 @@
       window.location.href = '../index.html';
     });
 
+    // Dynamically update username, avatar, and grade badge based on currentUser
+    const userAvatar = document.getElementById('userAvatar');
+    const usernameElem = document.getElementById('username');
+    const gradeBadge = document.getElementById('gradeBadge');
+    const totalStudentsElem = document.getElementById('totalStudents');
+
+    if (currentUser) {
+      let displayName = '';
+      let avatarText = '';
+      let gradeText = '';
+
+      if (currentUser.role === 'admin') {
+        displayName = 'Admin';
+        avatarText = 'AD';
+        gradeText = '';
+      } else if (currentUser.role === 'teacher') {
+        displayName = 'Teacher';
+        avatarText = 'TE';
+        gradeText = '';
+      } else if (currentUser.role === 'student') {
+        displayName = currentUser.name || currentUser.username || 'Student';
+        avatarText = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+        gradeText = currentUser.grade ? `Grade ${currentUser.grade}` : '';
+      } else {
+        displayName = currentUser.name || currentUser.username || 'User';
+        avatarText = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+        gradeText = '';
+      }
+
+      usernameElem.textContent = displayName;
+      userAvatar.textContent = avatarText;
+      if (gradeText) {
+        gradeBadge.textContent = gradeText;
+        gradeBadge.style.display = 'inline-block';
+      } else {
+        gradeBadge.style.display = 'none';
+      }
+    }
+
+    // Dynamically update total students count from localStorage
+    const students = JSON.parse(localStorage.getItem('students')) || [];
+    totalStudentsElem.textContent = students.length;
+
+    // Dynamically update total modules count from localStorage
+    const totalModulesElem = document.getElementById('totalModules');
+    const modules = JSON.parse(localStorage.getItem('modules')) || [];
+    totalModulesElem.textContent = modules.length;
+
+    // Existing functions for registration requests and system overview are removed
+    // because the new design does not include those sections.
+
     // Load registration requests from localStorage
     function loadRegistrationRequests() {
       return JSON.parse(localStorage.getItem('registrationRequests')) || [];
@@ -49,24 +183,51 @@
       localStorage.setItem('registrationRequests', JSON.stringify(requests));
     }
 
-    // Render registration requests
+    // Load recent activities from localStorage
+    function loadRecentActivities() {
+      return JSON.parse(localStorage.getItem('recentActivities')) || [];
+    }
+
+    // Save recent activities to localStorage
+    function saveRecentActivities(activities) {
+      localStorage.setItem('recentActivities', JSON.stringify(activities));
+    }
+
+    // Render recent activities
+    function renderRecentActivities() {
+      const container = document.getElementById('recentActivitiesList');
+      const activities = loadRecentActivities();
+      container.innerHTML = '';
+      activities.forEach(activity => {
+        const div = document.createElement('div');
+        div.className = 'activity';
+        div.textContent = activity;
+        container.appendChild(div);
+      });
+    }
+
+    // Render registration requests with accept/decline buttons
     function renderRegistrationRequests() {
-      const container = document.getElementById('registrationRequests');
+      const container = document.getElementById('registrationRequestsContainer');
       const requests = loadRegistrationRequests();
       container.innerHTML = '';
       if (requests.length === 0) {
-        container.textContent = 'No registration requests.';
+        container.textContent = 'No pending student registrations.';
         return;
       }
       requests.forEach((req, index) => {
         const div = document.createElement('div');
-        div.style.border = '1px solid #ccc';
-        div.style.padding = '0.5rem';
+        div.className = 'activity';
+        div.style.display = 'flex';
+        div.style.justifyContent = 'space-between';
+        div.style.alignItems = 'center';
         div.style.marginBottom = '0.5rem';
         div.innerHTML = `
-          <p><strong>Student:</strong> ${req.username} (Grade ${req.grade})</p>
-          <button data-index="${index}" class="acceptBtn">Accept</button>
-          <button data-index="${index}" class="declineBtn">Decline</button>
+          <span>${req.username} (Grade ${req.grade}) - Registered by ${req.registeredBy}</span>
+          <span>
+            <button data-index="${index}" class="acceptBtn">Accept</button>
+            <button data-index="${index}" class="declineBtn">Decline</button>
+          </span>
         `;
         container.appendChild(div);
       });
@@ -90,117 +251,72 @@
     function acceptRequest(index) {
       const requests = loadRegistrationRequests();
       const students = JSON.parse(localStorage.getItem('students')) || [];
+      const recentActivities = loadRecentActivities();
       const acceptedStudent = requests.splice(index, 1)[0];
       students.push(acceptedStudent);
-      localStorage.setItem('students', JSON.stringify(students));
+      recentActivities.unshift(`Student registration accepted: ${acceptedStudent.username} (Grade ${acceptedStudent.grade})`);
       saveRegistrationRequests(requests);
+      saveRecentActivities(recentActivities);
       renderRegistrationRequests();
-      renderSystemOverview();
+      renderRecentActivities();
+      // Update total students count
+      const totalStudentsElem = document.getElementById('totalStudents');
+      totalStudentsElem.textContent = students.length;
+      localStorage.setItem('students', JSON.stringify(students));
       alert('Student registration accepted.');
     }
 
     // Decline registration request
     function declineRequest(index) {
       const requests = loadRegistrationRequests();
-      requests.splice(index, 1);
+      const recentActivities = loadRecentActivities();
+      const declinedStudent = requests.splice(index, 1)[0];
+      recentActivities.unshift(`Student registration declined: ${declinedStudent.username} (Grade ${declinedStudent.grade})`);
       saveRegistrationRequests(requests);
+      saveRecentActivities(recentActivities);
       renderRegistrationRequests();
+      renderRecentActivities();
       alert('Student registration declined.');
     }
 
-    // Render system overview
-    function renderSystemOverview() {
-      const container = document.getElementById('systemOverview');
-      const students = JSON.parse(localStorage.getItem('students')) || [];
-      const modules = JSON.parse(localStorage.getItem('modules')) || [];
-      const progress = JSON.parse(localStorage.getItem('progress')) || {};
-
-      container.innerHTML = `
-        <p>Total Students: ${students.length}</p>
-        <p>Total Modules: ${modules.length}</p>
-        <p>Total Progress Records: ${Object.keys(progress).length}</p>
-      `;
-
-      // Calculate overall progress percentage
-      let totalProgress = 0;
-      let count = 0;
-      for (const studentId in progress) {
-        const studentProgress = progress[studentId];
-        for (const moduleId in studentProgress) {
-          const moduleProgress = studentProgress[moduleId];
-          if (moduleProgress.completed) {
-            totalProgress += 1;
-          } else {
-            const moduleData = modules.find(m => m.id == moduleId);
-            const totalQuestions = moduleData ? moduleData.questions.length : 0;
-            if (totalQuestions > 0) {
-              totalProgress += (moduleProgress.currentQuestionIndex / totalQuestions);
-            }
-          }
-          count++;
-        }
-      }
-      const overallProgress = count > 0 ? (totalProgress / count) : 0;
-
-      // Update progress bar width
-      const progressBar = document.getElementById('progressBar');
-      if (progressBar) {
-        progressBar.style.width = (overallProgress * 100) + '%';
-      }
-
-      renderStudentProgressList(students, progress, modules);
-    }
-
-    // Initial render
+    // Initial render of registration requests and recent activities
     renderRegistrationRequests();
-    renderSystemOverview();
+    renderRecentActivities();
 
-    // Render student progress list
-    function renderStudentProgressList(students, progress, modules) {
-      const container = document.getElementById('studentProgressList');
-      container.innerHTML = '';
-      if (students.length === 0) {
-        container.textContent = 'No students registered.';
-        return;
-      }
+    // New code for Manage Classes feature
+    const manageClassesBtn = document.getElementById('manageClassesBtn');
+    const studentListContainer = document.getElementById('studentListContainer');
+    const studentListTableBody = document.querySelector('#studentListTable tbody');
+    const closeStudentListBtn = document.getElementById('closeStudentListBtn');
 
+    function renderStudentList() {
+      const students = JSON.parse(localStorage.getItem('students')) || [];
+      // Sort students by grade ascending (assuming grade is a number)
+      students.sort((a, b) => (a.grade || 0) - (b.grade || 0));
+      studentListTableBody.innerHTML = '';
       students.forEach(student => {
-        const studentProgress = progress[student.username] || {};
-        let totalModules = modules.length;
-        let completedModules = 0;
-        let totalProgressPercent = 0;
-
-        modules.forEach(module => {
-          const moduleProgress = studentProgress[module.id];
-          if (moduleProgress) {
-            if (moduleProgress.completed) {
-              completedModules++;
-              totalProgressPercent += 100;
-            } else {
-              const totalQuestions = module.questions ? module.questions.length : 0;
-              if (totalQuestions > 0) {
-                totalProgressPercent += (moduleProgress.currentQuestionIndex / totalQuestions) * 100;
-              }
-            }
-          }
-        });
-
-        const averageProgress = totalModules > 0 ? (totalProgressPercent / totalModules) : 0;
-
-        const div = document.createElement('div');
-        div.style.border = '1px solid #ccc';
-        div.style.padding = '0.5rem';
-        div.style.marginBottom = '0.5rem';
-        div.innerHTML = `
-          <p><strong>${student.username}</strong> (Grade ${student.grade})</p>
-          <p>Progress: ${averageProgress.toFixed(2)}%</p>
-          <div class="progress-container" style="width: 100%; background: #eee; height: 10px; border-radius: 5px;">
-            <div class="progress-bar" style="width: ${averageProgress}%; height: 10px; background: #4caf50; border-radius: 5px;"></div>
-          </div>
+        const tr = document.createElement('tr');
+        const lastLogin = student.lastLogin ? new Date(student.lastLogin).toLocaleString() : 'Never';
+        tr.innerHTML = `
+          <td>${student.username || student.name || 'Unknown'}</td>
+          <td>${student.grade || 'N/A'}</td>
+          <td>${lastLogin}</td>
         `;
-        container.appendChild(div);
+        studentListTableBody.appendChild(tr);
       });
     }
+
+    manageClassesBtn.addEventListener('click', () => {
+      renderStudentList();
+      studentListContainer.style.display = 'block';
+    });
+
+    closeStudentListBtn.addEventListener('click', () => {
+      studentListContainer.style.display = 'none';
+    });
+  </script>
+</body>
+</html>
   </script>
 </body>
 </html>
