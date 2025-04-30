@@ -31,6 +31,27 @@
     </section>
 
     <section>
+      <h2>Upload New Module</h2>
+      <form id="uploadModuleForm" class="teacher-form">
+        <label for="moduleTitle">Module Title:</label>
+        <input type="text" id="moduleTitle" name="moduleTitle" required />
+        <label for="moduleDescription">Description:</label>
+        <textarea id="moduleDescription" name="moduleDescription" required></textarea>
+        <label for="moduleGrade">Grade Level:</label>
+        <select id="moduleGrade" name="moduleGrade" required>
+          <option value="" disabled selected>Select grade</option>
+          <option value="4">Grade 4</option>
+          <option value="5">Grade 5</option>
+          <option value="6">Grade 6</option>
+        </select>
+        <label for="moduleFile">Upload Module File (PDF, DOCX, PPT):</label>
+        <input type="file" id="moduleFile" name="moduleFile" accept=".pdf,.docx,.ppt,.pptx" required />
+        <button type="submit">Upload Module</button>
+      </form>
+      <div id="uploadMessage"></div>
+    </section>
+
+    <section>
       <h2>Your Uploaded Modules</h2>
       <div id="modulesList"></div>
     </section>
@@ -176,6 +197,54 @@
     }
 
     renderModules();
+
+    // Handle module upload form submission
+    const uploadModuleForm = document.getElementById('uploadModuleForm');
+    const uploadMessage = document.getElementById('uploadMessage');
+
+      uploadModuleForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const title = document.getElementById('moduleTitle').value.trim();
+        const description = document.getElementById('moduleDescription').value.trim();
+        const grade = document.getElementById('moduleGrade').value;
+        const fileInput = document.getElementById('moduleFile');
+        const file = fileInput.files[0];
+
+        if (!title || !description || !grade || !file) {
+          uploadMessage.style.color = 'red';
+          uploadMessage.textContent = 'Please fill all fields and select a file.';
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const fileData = event.target.result;
+
+          let modules = loadModules();
+
+          // Generate a new unique id for the module
+          const newId = modules.length > 0 ? Math.max(...modules.map(m => m.id)) + 1 : 1;
+
+          const newModule = {
+            id: newId,
+            title,
+            description,
+            grade,
+            fileData: fileData,
+            fileType: file.type
+          };
+
+          modules.push(newModule);
+          saveModules(modules);
+
+          uploadMessage.style.color = 'green';
+          uploadMessage.textContent = 'Module uploaded successfully.';
+          uploadModuleForm.reset();
+          renderModules();
+        };
+
+        reader.readAsDataURL(file);
+      });
   </script>
 </body>
 </html>

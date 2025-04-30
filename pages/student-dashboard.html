@@ -17,16 +17,7 @@
       <div id="progressSummary" style="margin-top: 1rem;"></div>
     </section>
 
-    <section>
-      <h2>Current Module</h2>
-      <div id="currentModuleContainer" style="display:none;">
-        <h3 id="currentModuleTitle"></h3>
-        <p id="currentModuleDescription"></p>
-        <div id="questionContainer"></div>
-        <button id="nextQuestionBtn">Next Question</button>
-        <div id="hintContainer" style="color: #d9534f; margin-top: 1rem;"></div>
-      </div>
-  </section>
+    <div id="questionContainer"></div>
 
   <section>
     <h2>Final Assessments</h2>
@@ -49,18 +40,9 @@
     });
 
     const modulesList = document.getElementById('modulesList');
-    const currentModuleContainer = document.getElementById('currentModuleContainer');
-    const currentModuleTitle = document.getElementById('currentModuleTitle');
-    const currentModuleDescription = document.getElementById('currentModuleDescription');
-    const questionContainer = document.getElementById('questionContainer');
-    const nextQuestionBtn = document.getElementById('nextQuestionBtn');
-    const hintContainer = document.getElementById('hintContainer');
 
     let modules = JSON.parse(localStorage.getItem('modules')) || [];
     let progress = JSON.parse(localStorage.getItem('progress')) || {};
-    let currentModuleId = null;
-    let currentQuestionIndex = 0;
-    let currentUserProgress = progress[currentUser.username] || {};
 
     // Filter modules by student's grade level
     const students = JSON.parse(localStorage.getItem('students')) || [];
@@ -89,7 +71,7 @@
         div.style.marginBottom = '0.5rem';
 
         // Calculate progress for this module for current user
-        const userModuleProgress = currentUserProgress[module.id];
+        const userModuleProgress = progress[currentUser.username]?.[module.id];
         let progressPercent = 0;
         if (userModuleProgress) {
           const totalQuestions = module.questions ? module.questions.length : 0;
@@ -111,20 +93,21 @@
         modulesList.appendChild(div);
       });
 
-      document.querySelectorAll('.startModuleBtn').forEach(btn => {
+      document.querySelectorAll('.viewModuleBtn').forEach(btn => {
         btn.addEventListener('click', (e) => {
           const moduleId = e.target.getAttribute('data-id');
-          startModule(moduleId);
+          const module = modules.find(m => m.id == moduleId);
+          if (!module) return;
+
+          // Create a temporary link to download the file
+          const link = document.createElement('a');
+          link.href = module.pdfData || module.fileData || '';
+          link.download = module.title ? module.title.replace(/\s+/g, '_') + '.pdf' : 'module.pdf';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
         });
       });
-    }
-
-    function startModule(moduleId) {
-      currentModuleId = moduleId;
-      currentQuestionIndex = currentUserProgress[moduleId]?.currentQuestionIndex || 0;
-      currentModuleContainer.style.display = 'block';
-      renderCurrentModule();
-      renderCurrentQuestion();
     }
 
     // New function to view module PDF and quiz side by side
@@ -132,104 +115,47 @@
       const module = modules.find(m => m.id == moduleId);
       if (!module) return;
 
-      // Show current module container
-      currentModuleContainer.style.display = 'flex';
-      currentModuleContainer.style.flexDirection = 'row';
-      currentModuleContainer.style.gap = '2rem';
-
       // Clear previous content
-      currentModuleTitle.textContent = module.title;
-      currentModuleDescription.textContent = '';
+      const currentModuleTitle = document.getElementById('currentModuleTitle');
+      if (currentModuleTitle) currentModuleTitle.textContent = module.title;
 
-      // Create PDF viewer iframe or embed
-      let pdfViewer = document.getElementById('pdfViewer');
-      if (!pdfViewer) {
-        pdfViewer = document.createElement('embed');
-        pdfViewer.id = 'pdfViewer';
-        pdfViewer.type = 'application/pdf';
-        pdfViewer.style.width = '50%';
-        pdfViewer.style.height = '600px';
-        currentModuleDescription.parentNode.insertBefore(pdfViewer, currentModuleDescription.nextSibling);
+      const currentModuleDescription = document.getElementById('currentModuleDescription');
+      if (currentModuleDescription) currentModuleDescription.textContent = '';
+
+      const questionContainer = document.getElementById('questionContainer');
+      if (questionContainer) {
+        questionContainer.innerHTML = '';
+        // Removed quiz questions rendering as per user request
       }
-      pdfViewer.src = module.pdfData;
 
-      // Render quiz questions next to PDF viewer
-      questionContainer.innerHTML = '';
-      module.questions.forEach((q, index) => {
-        const qDiv = document.createElement('div');
-        qDiv.style.border = '1px solid #ccc';
-        qDiv.style.padding = '0.5rem';
-        qDiv.style.marginBottom = '0.5rem';
-        qDiv.innerHTML = `<strong>Question ${index + 1}:</strong> ${q.text}`;
-        questionContainer.appendChild(qDiv);
-      });
+      // Display uploaded module file if available
+      if (module.pdfData) {
+        let pdfViewer = document.getElementById('pdfViewer');
+        if (!pdfViewer) {
+          pdfViewer = document.createElement('embed');
+          pdfViewer.id = 'pdfViewer';
+          pdfViewer.type = 'application/pdf';
+          pdfViewer.style.width = '100%';
+          pdfViewer.style.height = '600px';
+          questionContainer.parentNode.insertBefore(pdfViewer, questionContainer.nextSibling);
+        }
+        pdfViewer.src = module.pdfData;
 
-      nextQuestionBtn.style.display = 'none';
-      hintContainer.textContent = '';
+        // Add download link for the uploaded file
+        let downloadLink = document.getElementById('downloadModuleFile');
+        if (!downloadLink) {
+          downloadLink = document.createElement('a');
+          downloadLink.id = 'downloadModuleFile';
+          downloadLink.textContent = 'Download Module File';
+          downloadLink.style.display = 'block';
+          downloadLink.style.marginTop = '1rem';
+          downloadLink.style.fontWeight = 'bold';
+          questionContainer.parentNode.insertBefore(downloadLink, pdfViewer.nextSibling);
+        }
+        downloadLink.href = module.pdfData;
+        downloadLink.download = module.title ? module.title.replace(/\s+/g, '_') + '.pdf' : 'module.pdf';
+      }
     }
-
-    function renderCurrentModule() {
-      const module = modules.find(m => m.id == currentModuleId);
-      if (!module) return;
-      currentModuleTitle.textContent = module.title;
-      currentModuleDescription.textContent = module.description;
-    }
-
-    function renderCurrentQuestion() {
-      const module = modules.find(m => m.id == currentModuleId);
-      if (!module) return;
-      const questions = module.questions || [];
-      if (currentQuestionIndex >= questions.length) {
-        questionContainer.innerHTML = '<p>Module completed! Congratulations!</p>';
-        nextQuestionBtn.style.display = 'none';
-        hintContainer.textContent = '';
-        saveProgress(true);
-        return;
-      }
-      const question = questions[currentQuestionIndex];
-      questionContainer.innerHTML = `
-        <p><strong>Question ${currentQuestionIndex + 1}:</strong> ${question.text}</p>
-        <input type="text" id="answerInput" placeholder="Your answer" />
-      `;
-      nextQuestionBtn.style.display = 'inline-block';
-      hintContainer.textContent = '';
-    }
-
-    function saveProgress(completed = false) {
-      if (!progress[currentUser.username]) {
-        progress[currentUser.username] = {};
-      }
-      progress[currentUser.username][currentModuleId] = {
-        currentQuestionIndex,
-        completed
-      };
-      localStorage.setItem('progress', JSON.stringify(progress));
-    }
-
-    nextQuestionBtn.addEventListener('click', () => {
-      const answerInput = document.getElementById('answerInput');
-      if (!answerInput) return;
-      const userAnswer = answerInput.value.trim();
-      if (!userAnswer) {
-        hintContainer.textContent = 'Please enter an answer before proceeding.';
-        return;
-      }
-      const module = modules.find(m => m.id == currentModuleId);
-      if (!module) return;
-      const question = module.questions[currentQuestionIndex];
-      if (!question) return;
-
-      // Simple AI hint system: if answer is incorrect, show hint and do not advance
-      if (userAnswer.toLowerCase() !== question.answer.toLowerCase()) {
-        hintContainer.textContent = 'Hint: ' + (question.hint || 'Try reviewing the material again.');
-        return;
-      }
-
-      // Correct answer: advance to next question
-      currentQuestionIndex++;
-      saveProgress();
-      renderCurrentQuestion();
-    });
 
     // Attach event listeners for view module buttons
     document.addEventListener('click', (e) => {
@@ -282,8 +208,27 @@
         } else {
           const link = document.createElement('a');
           link.href = file.url;
-          link.textContent = 'Download file';
-          fileDiv.appendChild(link);
+          const viewModuleBtn = document.createElement('button');
+          viewModuleBtn.textContent = 'View Module';
+          viewModuleBtn.style.cursor = 'pointer';
+          viewModuleBtn.style.padding = '0.5rem 1rem';
+          viewModuleBtn.style.fontWeight = 'bold';
+          viewModuleBtn.addEventListener('click', () => {
+            window.open(file.url, '_blank');
+          });
+          fileDiv.appendChild(viewModuleBtn);
+
+          // Add "Let's play" button next to "View Module"
+          const playButton = document.createElement('button');
+          playButton.textContent = "Let's play";
+          playButton.style.cursor = 'pointer';
+          playButton.style.padding = '0.5rem 1rem';
+          playButton.style.fontWeight = 'bold';
+          playButton.style.marginLeft = '0.5rem';
+          playButton.addEventListener('click', () => {
+            window.location.href = 'https://blast-zone-out.github.io/Math-Venture/';
+          });
+          fileDiv.appendChild(playButton);
         }
 
         finalAssessmentsContainer.appendChild(fileDiv);
