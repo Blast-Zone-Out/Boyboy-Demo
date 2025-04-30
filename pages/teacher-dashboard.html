@@ -87,7 +87,7 @@
     // Register student (adds to registration requests)
     const registerStudentForm = document.getElementById('registerStudentForm');
     const registerMessage = document.getElementById('registerMessage');
-    registerStudentForm.addEventListener('submit', (e) => {
+    registerStudentForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const username = document.getElementById('studentUsername').value.trim();
       const password = document.getElementById('studentPassword').value.trim();
@@ -98,20 +98,27 @@
         return;
       }
 
-      // Check if username already exists in students or registration requests
-      const students = loadStudents();
-      const requests = loadRegistrationRequests();
-      if (students.find(s => s.username === username) || requests.find(r => r.username === username)) {
-        registerMessage.textContent = 'Username already exists.';
-        return;
+      try {
+        const response = await fetch('http://localhost:5000/api/students/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username, password, grade })
+        });
+        const data = await response.json();
+        if (response.ok) {
+          registerMessage.style.color = 'green';
+          registerMessage.textContent = data.message || 'Student registration request submitted.';
+          registerStudentForm.reset();
+        } else {
+          registerMessage.style.color = 'red';
+          registerMessage.textContent = data.error || 'Registration failed.';
+        }
+      } catch (error) {
+        registerMessage.style.color = 'red';
+        registerMessage.textContent = 'Error connecting to server.';
       }
-
-      requests.push({ username, password, grade });
-      saveRegistrationRequests(requests);
-      registerMessage.style.color = 'green';
-      registerMessage.textContent = 'Student registration request submitted.';
-      registerStudentForm.reset();
-      renderRegistrationRequests();
     });
 
     // Render registration requests for teacher info
@@ -202,7 +209,7 @@
     const uploadModuleForm = document.getElementById('uploadModuleForm');
     const uploadMessage = document.getElementById('uploadMessage');
 
-      uploadModuleForm.addEventListener('submit', (e) => {
+      uploadModuleForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const title = document.getElementById('moduleTitle').value.trim();
         const description = document.getElementById('moduleDescription').value.trim();
@@ -216,34 +223,31 @@
           return;
         }
 
-        const reader = new FileReader();
-        reader.onload = function(event) {
-          const fileData = event.target.result;
+        const formData = new FormData();
+        formData.append('title', title);
+        formData.append('description', description);
+        formData.append('grade', grade);
+        formData.append('file', file);
 
-          let modules = loadModules();
-
-          // Generate a new unique id for the module
-          const newId = modules.length > 0 ? Math.max(...modules.map(m => m.id)) + 1 : 1;
-
-          const newModule = {
-            id: newId,
-            title,
-            description,
-            grade,
-            fileData: fileData,
-            fileType: file.type
-          };
-
-          modules.push(newModule);
-          saveModules(modules);
-
-          uploadMessage.style.color = 'green';
-          uploadMessage.textContent = 'Module uploaded successfully.';
-          uploadModuleForm.reset();
-          renderModules();
-        };
-
-        reader.readAsDataURL(file);
+        try {
+          const response = await fetch('http://localhost:5000/api/modules', {
+            method: 'POST',
+            body: formData
+          });
+          const data = await response.json();
+          if (response.ok) {
+            uploadMessage.style.color = 'green';
+            uploadMessage.textContent = data.message || 'Module uploaded successfully.';
+            uploadModuleForm.reset();
+            renderModules();
+          } else {
+            uploadMessage.style.color = 'red';
+            uploadMessage.textContent = data.error || 'Upload failed.';
+          }
+        } catch (error) {
+          uploadMessage.style.color = 'red';
+          uploadMessage.textContent = 'Error connecting to server.';
+        }
       });
   </script>
 </body>

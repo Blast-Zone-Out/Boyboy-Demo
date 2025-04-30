@@ -41,16 +41,37 @@
 
     const modulesList = document.getElementById('modulesList');
 
-    let modules = JSON.parse(localStorage.getItem('modules')) || [];
-    let progress = JSON.parse(localStorage.getItem('progress')) || {};
+    let modules = [];
+    let progress = {};
 
-    // Filter modules by student's grade level
-    const students = JSON.parse(localStorage.getItem('students')) || [];
-    const studentInfo = students.find(s => s.username === currentUser.username);
-    const studentGrade = studentInfo ? studentInfo.grade : null;
+    let studentGrade = null;
+
+    async function fetchModules() {
+      try {
+        const response = await fetch('http://localhost:5000/api/modules');
+        if (!response.ok) throw new Error('Failed to fetch modules');
+        const data = await response.json();
+        modules = data;
+        renderModulesList();
+      } catch (error) {
+        modulesList.textContent = 'Error loading modules.';
+      }
+    }
+
+    async function fetchStudentInfo() {
+      try {
+        const response = await fetch('http://localhost:5000/api/students');
+        if (!response.ok) throw new Error('Failed to fetch students');
+        const students = await response.json();
+        const studentInfo = students.find(s => s.username === currentUser.username);
+        studentGrade = studentInfo ? studentInfo.grade : null;
+        renderModulesList();
+      } catch (error) {
+        modulesList.textContent = 'Error loading student info.';
+      }
+    }
 
     function filterModulesByGrade() {
-      // Filter modules to only those matching the student's grade
       if (!studentGrade) {
         return [];
       }
@@ -70,19 +91,8 @@
         div.style.padding = '0.5rem';
         div.style.marginBottom = '0.5rem';
 
-        // Calculate progress for this module for current user
-        const userModuleProgress = progress[currentUser.username]?.[module.id];
+        // Progress calculation can be updated later with API data
         let progressPercent = 0;
-        if (userModuleProgress) {
-          const totalQuestions = module.questions ? module.questions.length : 0;
-          if (totalQuestions > 0) {
-            if (userModuleProgress.completed) {
-              progressPercent = 100;
-            } else {
-              progressPercent = Math.floor((userModuleProgress.currentQuestionIndex / totalQuestions) * 100);
-            }
-          }
-        }
 
         div.innerHTML = `
           <h3>${module.title}</h3>
@@ -101,7 +111,7 @@
 
           // Create a temporary link to download the file
           const link = document.createElement('a');
-          link.href = module.pdfData || module.fileData || '';
+          link.href = module.file_url || '';
           link.download = module.title ? module.title.replace(/\s+/g, '_') + '.pdf' : 'module.pdf';
           document.body.appendChild(link);
           link.click();
@@ -109,6 +119,9 @@
         });
       });
     }
+
+    fetchStudentInfo();
+    fetchModules();
 
     // New function to view module PDF and quiz side by side
     function viewModule(moduleId) {
