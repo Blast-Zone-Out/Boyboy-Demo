@@ -3,7 +3,7 @@
 body {
   margin: 0;
   font-family: 'Poppins', sans-serif;
-  background: #f9fafb;
+  background-image: url('../BG.png');
   color: #333;
 }
 
@@ -101,7 +101,7 @@ main h1 {
   font-weight: 700;
   font-size: 2rem;
   margin-bottom: 2rem;
-  color: #1e293b; /* dark slate */
+  color: whitesmoke; /* dark slate */
 }
 
 .summary-cards {

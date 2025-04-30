@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Analytics - Student Progress</title>
+  <link rel="stylesheet" href="../css/admin-dashboard-modern.css" />
+  <style>
+    .progress-container {
+      max-width: 800px;
+      margin: 2rem auto;
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px rgb(0 0 0 / 0.05);
+    }
+    .progress-item {
+      margin-bottom: 1.5rem;
+    }
+    .progress-label {
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+      color: #334155;
+    }
+    .progress-bar {
+      width: 100%;
+      background-color: #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
+      height: 20px;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background-color: #3b82f6;
+      width: 0;
+      transition: width 0.6s ease;
+      border-radius: 8px 0 0 8px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-left">
+      <div class="logo-icon" aria-label="Book icon" title="Book icon">🦉</div>
+      <div class="brand-name">MathVenture</div>
+    </div>
+    <div class="header-center">
+      <nav>
+        <a href="admin-dashboard.html">Dashboard</a>
+        <a href="#">Learn</a>
+        <a href="#">Practice</a>
+        <a href="admin-analytics.html" style="font-weight: 700; color: #93c5fd;">Analytics</a>
+      </nav>
+    </div>
+    <div class="header-right">
+      <div id="userAvatar" class="user-avatar" aria-label="User avatar" title="User avatar">AD</div>
+      <div id="username" class="username">Admin</div>
+      <div class="logout" role="button" tabindex="0" aria-label="Logout" id="logoutBtn">Logout</div>
+    </div>
+  </header>
+  <main>
+    <h1>Student Progress Analytics</h1>
+    <div class="progress-container" aria-label="Student progress list" id="progressContainer">
+      <!-- Dynamic student progress items will be inserted here -->
+    </div>
+  </main>
+
+  <script>
+    // Check if user is admin
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (!currentUser || currentUser.role !== 'admin') {
+      alert('Access denied. Please login as Admin.');
+      window.location.href = '../index.html';
+    }
+
+    const logoutBtn = document.getElementById('logoutBtn');
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('currentUser');
+      window.location.href = '../index.html';
+    });
+
+    // Load students registered by teachers and display progress
+    function loadStudentProgress() {
+      const students = JSON.parse(localStorage.getItem('students')) || [];
+      const progressContainer = document.getElementById('progressContainer');
+      progressContainer.innerHTML = '';
+
+      // Filter students registered by teachers
+      const filteredStudents = students.filter(s => s.registeredBy && s.registeredBy !== '');
+
+      if (filteredStudents.length === 0) {
+        progressContainer.innerHTML = '<p>No students registered by teachers found.</p>';
+        return;
+      }
+
+      filteredStudents.forEach(student => {
+        // Assuming student.progress is a number 0-100 representing lesson completion percentage
+        const progressPercent = student.progress || 0;
+        const lesson = student.currentLesson || 'N/A';
+        const studentName = student.username || student.name || 'Unknown';
+        const lastLogin = student.lastLogin ? new Date(student.lastLogin).toLocaleString() : 'Never';
+
+        const progressItem = document.createElement('div');
+        progressItem.className = 'progress-item';
+
+        const label = document.createElement('div');
+        label.className = 'progress-label';
+        label.textContent = `Student: ${studentName} - Lesson ${lesson} - Last Login: ${lastLogin}`;
+
+        const progressBar = document.createElement('div');
+        progressBar.className = 'progress-bar';
+
+        const progressFill = document.createElement('div');
+        progressFill.className = 'progress-bar-fill';
+        progressFill.style.width = `${progressPercent}%`;
+
+        progressBar.appendChild(progressFill);
+        progressItem.appendChild(label);
+        progressItem.appendChild(progressBar);
+
+        progressContainer.appendChild(progressItem);
+      });
+    }
+
+    loadStudentProgress();
+  </script>
+</body>
+</html>

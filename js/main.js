@@ -7,9 +7,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const loginForm = document.getElementById('loginForm');
   const loginMessage = document.getElementById('loginMessage');
 
+  // Load teacher password from localStorage or use default
+  function getTeacherPassword() {
+    return localStorage.getItem('teacherPassword') || 'te@ch3r';
+  }
+
+  function setTeacherPassword(newPassword) {
+    localStorage.setItem('teacherPassword', newPassword);
+  }
+
   // Fixed accounts
   const adminAccount = { username: 'admin', password: 'p@ssw0rd' };
-  const teacherAccount = { username: 'teacher', password: 'te@ch3r' };
 
   // Load student accounts from localStorage or initialize empty array
   function loadStudents() {
@@ -80,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
           loader.style.display = 'none';
         }
       } else if (role === 'teacher') {
-        if (password === teacherAccount.password) {
+        if (password === getTeacherPassword()) {
           localStorage.setItem('currentUser', JSON.stringify({ role: 'teacher', username: 'teacher' }));
           window.location.href = 'pages/teacher-dashboard.html';
         } else {
@@ -104,6 +112,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
   
         if (password === student.password) {
+          // Update lastLogin timestamp
+          const students = loadStudents();
+          const studentIndex = students.findIndex(s => s.username === selectedStudent);
+          if (studentIndex !== -1) {
+            students[studentIndex].lastLogin = new Date().toISOString();
+            localStorage.setItem('students', JSON.stringify(students));
+          }
           localStorage.setItem('currentUser', JSON.stringify({ role: 'student', username: student.username }));
           window.location.href = 'pages/student-dashboard.html';
         } else {

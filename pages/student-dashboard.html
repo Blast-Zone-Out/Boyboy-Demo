@@ -26,7 +26,12 @@
         <button id="nextQuestionBtn">Next Question</button>
         <div id="hintContainer" style="color: #d9534f; margin-top: 1rem;"></div>
       </div>
-    </section>
+  </section>
+
+  <section>
+    <h2>Final Assessments</h2>
+    <div id="finalAssessmentsContainer"></div>
+  </section>
   </div>
 
   <script>
@@ -63,8 +68,11 @@
     const studentGrade = studentInfo ? studentInfo.grade : null;
 
     function filterModulesByGrade() {
-      // For simplicity, all modules are available to all grades in this version
-      return modules;
+      // Filter modules to only those matching the student's grade
+      if (!studentGrade) {
+        return [];
+      }
+      return modules.filter(m => m.grade === studentGrade);
     }
 
     function renderModulesList() {
@@ -98,7 +106,7 @@
           <h3>${module.title}</h3>
           <p>${module.description}</p>
           <p>Progress: ${progressPercent}%</p>
-          <button data-id="${module.id}" class="startModuleBtn">Start Module</button>
+          <button data-id="${module.id}" class="viewModuleBtn">View Module</button>
         `;
         modulesList.appendChild(div);
       });
@@ -117,6 +125,47 @@
       currentModuleContainer.style.display = 'block';
       renderCurrentModule();
       renderCurrentQuestion();
+    }
+
+    // New function to view module PDF and quiz side by side
+    function viewModule(moduleId) {
+      const module = modules.find(m => m.id == moduleId);
+      if (!module) return;
+
+      // Show current module container
+      currentModuleContainer.style.display = 'flex';
+      currentModuleContainer.style.flexDirection = 'row';
+      currentModuleContainer.style.gap = '2rem';
+
+      // Clear previous content
+      currentModuleTitle.textContent = module.title;
+      currentModuleDescription.textContent = '';
+
+      // Create PDF viewer iframe or embed
+      let pdfViewer = document.getElementById('pdfViewer');
+      if (!pdfViewer) {
+        pdfViewer = document.createElement('embed');
+        pdfViewer.id = 'pdfViewer';
+        pdfViewer.type = 'application/pdf';
+        pdfViewer.style.width = '50%';
+        pdfViewer.style.height = '600px';
+        currentModuleDescription.parentNode.insertBefore(pdfViewer, currentModuleDescription.nextSibling);
+      }
+      pdfViewer.src = module.pdfData;
+
+      // Render quiz questions next to PDF viewer
+      questionContainer.innerHTML = '';
+      module.questions.forEach((q, index) => {
+        const qDiv = document.createElement('div');
+        qDiv.style.border = '1px solid #ccc';
+        qDiv.style.padding = '0.5rem';
+        qDiv.style.marginBottom = '0.5rem';
+        qDiv.innerHTML = `<strong>Question ${index + 1}:</strong> ${q.text}`;
+        questionContainer.appendChild(qDiv);
+      });
+
+      nextQuestionBtn.style.display = 'none';
+      hintContainer.textContent = '';
     }
 
     function renderCurrentModule() {
@@ -182,8 +231,66 @@
       renderCurrentQuestion();
     });
 
+    // Attach event listeners for view module buttons
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('viewModuleBtn')) {
+        const moduleId = e.target.getAttribute('data-id');
+        viewModule(moduleId);
+      }
+    });
+
     // Initial render
     renderModulesList();
+
+    // Render final assessments filtered by student's grade
+    function renderFinalAssessments() {
+      const finalAssessmentsContainer = document.getElementById('finalAssessmentsContainer');
+      const finalAssessmentFiles = JSON.parse(localStorage.getItem('finalAssessmentFiles') || '[]');
+      const filteredFiles = finalAssessmentFiles.filter(f => f.grade === String(studentGrade));
+
+      finalAssessmentsContainer.innerHTML = '';
+      if (filteredFiles.length === 0) {
+        finalAssessmentsContainer.textContent = 'No final assessments available for your grade.';
+        return;
+      }
+
+      filteredFiles.forEach(file => {
+        const fileDiv = document.createElement('div');
+        fileDiv.className = 'file-item';
+        fileDiv.style.border = '1px solid #ccc';
+        fileDiv.style.padding = '0.5rem';
+        fileDiv.style.marginBottom = '1rem';
+
+        const title = document.createElement('h3');
+        title.textContent = `${file.name} (Quarter ${file.quarter})`;
+        fileDiv.appendChild(title);
+
+        if (file.url.endsWith('.pdf')) {
+          const embed = document.createElement('embed');
+          embed.src = file.url;
+          embed.type = 'application/pdf';
+          embed.style.width = '100%';
+          embed.style.height = '400px';
+          fileDiv.appendChild(embed);
+        } else if (file.url.endsWith('.docx')) {
+          const iframe = document.createElement('iframe');
+          iframe.src = `https://docs.google.com/gview?url=${encodeURIComponent(window.location.origin + '/' + file.url)}&embedded=true`;
+          iframe.width = '100%';
+          iframe.height = '400px';
+          iframe.frameBorder = '0';
+          fileDiv.appendChild(iframe);
+        } else {
+          const link = document.createElement('a');
+          link.href = file.url;
+          link.textContent = 'Download file';
+          fileDiv.appendChild(link);
+        }
+
+        finalAssessmentsContainer.appendChild(fileDiv);
+      });
+    }
+
+    renderFinalAssessments();
   </script>
 </body>
 </html>

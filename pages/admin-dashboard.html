@@ -9,16 +9,17 @@
 <body>
   <header>
     <div class="header-left">
-      <div class="logo-icon" aria-label="Book icon" title="Book icon">📚</div>
+      <div class="logo-icon" aria-label="Book icon" title="Book icon">🦉</div>
       <div class="brand-name">MathVenture</div>
     </div>
     <div class="header-center">
-      <nav>
-        <a href="#">Dashboard</a>
-        <a href="#">Learn</a>
-        <a href="#">Practice</a>
-        <a href="#">Analytics</a>
-      </nav>
+<nav>
+  <a href="admin-dashboard.html">Dashboard</a>
+  <a href="admin-modules.html">Manage Modules</a>
+  <a href="#">Learn</a>
+  <a href="#">Practice</a>
+  <a href="admin-analytics.html">Analytics</a>
+</nav>
     </div>
     <div class="header-right">
       <div id="userAvatar" class="user-avatar" aria-label="User avatar" title="User avatar">AJ</div>
@@ -72,41 +73,18 @@
       </section>
       <section class="panel quick-actions" aria-label="Quick Actions">
         <h2>Quick Actions</h2>
-        <div class="quick-action-btn" role="button" tabindex="0" aria-label="Add New Teacher">
-          <div class="icon">📘</div>
-          <div>Add New Teacher</div>
-        </div>
-      <div class="quick-action-btn" role="button" tabindex="0" aria-label="Manage Classes" id="manageClassesBtn">
-        <div class="icon">👨‍🏫</div>
-        <div>Manage Classes</div>
+      <div class="quick-action-btn" role="button" tabindex="0" aria-label="Change Teacher Password" id="changeTeacherPasswordBtn">
+        <div class="icon">🔑</div>
+        <div>Change Teacher Password</div>
       </div>
-      <div class="quick-action-btn" role="button" tabindex="0" aria-label="Student Enrollment">
-        <div class="icon">🏫</div>
-        <div>Student Enrollment</div>
-      </div>
-        <div class="quick-action-btn" role="button" tabindex="0" aria-label="View Reports">
-          <div class="icon">📈</div>
-          <div>View Reports</div>
-        </div>
+      <a href="final-assessment.html" class="quick-action-btn" role="button" tabindex="0" aria-label="Add Final Assessment Module" style="text-decoration:none; color:inherit;">
+        <div class="icon">📕</div>
+        <div>Add Final Assessment Module</div>
+      </a>
       </section>
+
     </div>
   </main>
-
-  <div id="studentListContainer" style="display:none; padding: 1rem; border: 1px solid #ccc; margin: 1rem; background: #f9f9f9;">
-    <h2>Students List <button id="closeStudentListBtn" style="float:right;">Close</button></h2>
-    <table id="studentListTable" border="1" cellpadding="5" cellspacing="0" style="width: 100%; border-collapse: collapse;">
-      <thead>
-        <tr>
-          <th>Username</th>
-          <th>Grade</th>
-          <th>Last Login</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Student rows will be inserted here -->
-      </tbody>
-    </table>
-  </div>
 
   <script>
     // Check if user is admin
@@ -167,8 +145,8 @@
 
     // Dynamically update total modules count from localStorage
     const totalModulesElem = document.getElementById('totalModules');
-    const modules = JSON.parse(localStorage.getItem('modules')) || [];
-    totalModulesElem.textContent = modules.length;
+    const finalAssessmentFiles = JSON.parse(localStorage.getItem('finalAssessmentFiles')) || [];
+    totalModulesElem.textContent = finalAssessmentFiles.length;
 
     // Existing functions for registration requests and system overview are removed
     // because the new design does not include those sections.
@@ -198,7 +176,9 @@
       const container = document.getElementById('recentActivitiesList');
       const activities = loadRecentActivities();
       container.innerHTML = '';
-      activities.forEach(activity => {
+      // Limit to 5 recent activities
+      const limitedActivities = activities.slice(0, 5);
+      limitedActivities.forEach(activity => {
         const div = document.createElement('div');
         div.className = 'activity';
         div.textContent = activity;
@@ -223,7 +203,7 @@
         div.style.alignItems = 'center';
         div.style.marginBottom = '0.5rem';
         div.innerHTML = `
-          <span>${req.username} (Grade ${req.grade}) - Registered by ${req.registeredBy}</span>
+          <span>${req.username} (Grade ${req.grade})</span>
           <span>
             <button data-index="${index}" class="acceptBtn">Accept</button>
             <button data-index="${index}" class="declineBtn">Decline</button>
@@ -247,76 +227,109 @@
       });
     }
 
-    // Accept registration request
-    function acceptRequest(index) {
-      const requests = loadRegistrationRequests();
-      const students = JSON.parse(localStorage.getItem('students')) || [];
-      const recentActivities = loadRecentActivities();
-      const acceptedStudent = requests.splice(index, 1)[0];
-      students.push(acceptedStudent);
-      recentActivities.unshift(`Student registration accepted: ${acceptedStudent.username} (Grade ${acceptedStudent.grade})`);
-      saveRegistrationRequests(requests);
-      saveRecentActivities(recentActivities);
-      renderRegistrationRequests();
-      renderRecentActivities();
-      // Update total students count
-      const totalStudentsElem = document.getElementById('totalStudents');
-      totalStudentsElem.textContent = students.length;
-      localStorage.setItem('students', JSON.stringify(students));
-      alert('Student registration accepted.');
-    }
+      // Accept registration request
+      function acceptRequest(index) {
+        const requests = loadRegistrationRequests();
+        const students = JSON.parse(localStorage.getItem('students')) || [];
+        let recentActivities = loadRecentActivities();
+        const acceptedStudent = requests.splice(index, 1)[0];
+        // Set registeredBy property from the registration request or default to 'teacher'
+        if (!acceptedStudent.registeredBy) {
+          acceptedStudent.registeredBy = 'teacher';
+        }
+        students.push(acceptedStudent);
+        recentActivities.unshift(`Student registration accepted: ${acceptedStudent.username} (Grade ${acceptedStudent.grade})`);
+        // Limit recent activities to 5
+        recentActivities = recentActivities.slice(0, 5);
+        saveRegistrationRequests(requests);
+        saveRecentActivities(recentActivities);
+        renderRegistrationRequests();
+        renderRecentActivities();
+        // Update total students count
+        const totalStudentsElem = document.getElementById('totalStudents');
+        totalStudentsElem.textContent = students.length;
+        localStorage.setItem('students', JSON.stringify(students));
+        alert('Student registration accepted.');
+      }
 
-    // Decline registration request
-    function declineRequest(index) {
-      const requests = loadRegistrationRequests();
-      const recentActivities = loadRecentActivities();
-      const declinedStudent = requests.splice(index, 1)[0];
-      recentActivities.unshift(`Student registration declined: ${declinedStudent.username} (Grade ${declinedStudent.grade})`);
-      saveRegistrationRequests(requests);
-      saveRecentActivities(recentActivities);
-      renderRegistrationRequests();
-      renderRecentActivities();
-      alert('Student registration declined.');
-    }
+      // Decline registration request
+      function declineRequest(index) {
+        const requests = loadRegistrationRequests();
+        let recentActivities = loadRecentActivities();
+        const declinedStudent = requests.splice(index, 1)[0];
+        recentActivities.unshift(`Student registration declined: ${declinedStudent.username} (Grade ${declinedStudent.grade})`);
+        // Limit recent activities to 5
+        recentActivities = recentActivities.slice(0, 5);
+        saveRegistrationRequests(requests);
+        saveRecentActivities(recentActivities);
+        renderRegistrationRequests();
+        renderRecentActivities();
+        alert('Student registration declined.');
+      }
 
     // Initial render of registration requests and recent activities
     renderRegistrationRequests();
     renderRecentActivities();
 
-    // New code for Manage Classes feature
-    const manageClassesBtn = document.getElementById('manageClassesBtn');
-    const studentListContainer = document.getElementById('studentListContainer');
-    const studentListTableBody = document.querySelector('#studentListTable tbody');
-    const closeStudentListBtn = document.getElementById('closeStudentListBtn');
+    // Change Teacher Password feature
+    const changeTeacherPasswordBtn = document.getElementById('changeTeacherPasswordBtn');
 
-    function renderStudentList() {
-      const students = JSON.parse(localStorage.getItem('students')) || [];
-      // Sort students by grade ascending (assuming grade is a number)
-      students.sort((a, b) => (a.grade || 0) - (b.grade || 0));
-      studentListTableBody.innerHTML = '';
-      students.forEach(student => {
-        const tr = document.createElement('tr');
-        const lastLogin = student.lastLogin ? new Date(student.lastLogin).toLocaleString() : 'Never';
-        tr.innerHTML = `
-          <td>${student.username || student.name || 'Unknown'}</td>
-          <td>${student.grade || 'N/A'}</td>
-          <td>${lastLogin}</td>
-        `;
-        studentListTableBody.appendChild(tr);
-      });
+    function getTeacherPassword() {
+      return localStorage.getItem('teacherPassword') || 'te@ch3r';
     }
 
-    manageClassesBtn.addEventListener('click', () => {
-      renderStudentList();
-      studentListContainer.style.display = 'block';
-    });
+    function setTeacherPassword(newPassword) {
+      localStorage.setItem('teacherPassword', newPassword);
+    }
 
-    closeStudentListBtn.addEventListener('click', () => {
-      studentListContainer.style.display = 'none';
-    });
-  </script>
-</body>
-</html>
+      changeTeacherPasswordBtn.addEventListener('click', () => {
+        const oldPassword = prompt('Enter old password:');
+        if (oldPassword === null) {
+          alert('Password change cancelled.');
+          return;
+        }
+        if (oldPassword !== getTeacherPassword()) {
+          alert('Wrong old password.');
+          return;
+        }
+        const newPassword = prompt('Enter new password (at least 6 characters):');
+        if (newPassword === null) {
+          alert('Password change cancelled.');
+          return;
+        }
+        if (newPassword.length < 6) {
+          alert('New password must be at least 6 characters.');
+          return;
+        }
+        const confirmPassword = prompt('Confirm new password:');
+        if (confirmPassword === null) {
+          alert('Password change cancelled.');
+          return;
+        }
+        if (newPassword !== confirmPassword) {
+          alert('New password and confirm password do not match.');
+          return;
+        }
+        setTeacherPassword(newPassword);
+        alert('Password changed successfully.');
+
+        // Add recent activity for password change
+        let recentActivities = JSON.parse(localStorage.getItem('recentActivities')) || [];
+        recentActivities.unshift(`Teacher password changed on ${new Date().toLocaleString()}`);
+        // Limit recent activities to 5
+        recentActivities = recentActivities.slice(0, 5);
+        localStorage.setItem('recentActivities', JSON.stringify(recentActivities));
+
+        // Re-render recent activities list
+        const container = document.getElementById('recentActivitiesList');
+        container.innerHTML = '';
+        recentActivities.forEach(activity => {
+          const div = document.createElement('div');
+          div.className = 'activity';
+          div.textContent = activity;
+          container.appendChild(div);
+        });
+      });
   </script>
 </body>
 </html>
