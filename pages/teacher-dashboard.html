@@ -4,15 +4,90 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Teacher Dashboard</title>
-  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="stylesheet" href="../css/admin-dashboard-modern.css" />
+  <style>
+    .header-center nav a {
+      margin: 0 1rem;
+      text-decoration: none;
+      color: white;
+      font-weight: 500;
+      font-size: 1rem;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+    .header-center nav a:hover {
+      color: #93c5fd; /* lighter blue on hover */
+    }
+    .header-center nav a:focus {
+      outline: none; /* remove focus outline */
+      box-shadow: none; /* remove focus box shadow */
+    }
+  
+    .tab-content {
+      display: none;
+      padding: 1rem 0;
+    }
+    .tab-content.active {
+      display: block;
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
+  <header>
+    <div class="header-left">
+      <div class="logo-icon" aria-label="Book icon" title="Book icon">🦉</div>
+      <div class="brand-name">MathVenture</div>
+    </div>
+    <div class="header-center">
+      <nav>
+        <a href="#" class="tab-link active" data-tab="add-student">Add Student</a>
+        <a href="#" class="tab-link" data-tab="student-list">Student List</a>
+        <a href="#" class="tab-link" data-tab="add-module">Add Module</a>
+      </nav>
+    </div>
+    <div class="header-right">
+      <div id="userAvatar" class="user-avatar" aria-label="User avatar" title="User avatar">TE</div>
+      <div id="username" class="username">Teacher</div>
+      <div id="gradeBadge" class="grade-badge" style="display:none;"></div>
+      <div id="logoutBtn" class="logout" role="button" tabindex="0" aria-label="Logout">Logout</div>
+    </div>
+  </header>
+  <main>
     <h1>Teacher Dashboard</h1>
-    <button id="logoutBtn">Logout</button>
-
-    <section>
-      <h2>Register Student</h2>
+    <div class="summary-cards">
+      <div class="card blue">
+        <div class="icon" aria-label="Total Students icon" title="Total Students">👥</div>
+        <div class="text">
+          <div class="label">Total Students</div>
+          <div class="value" id="totalStudents">0</div>
+        </div>
+      </div>
+      <div class="card purple">
+        <div class="icon" aria-label="Total Modules icon" title="Total Modules">📚</div>
+        <div class="text">
+          <div class="label">Total Modules</div>
+          <div class="value" id="totalModules">0</div>
+        </div>
+      </div>
+      <div class="card green">
+        <div class="icon" aria-label="Active Classes icon" title="Active Classes">🏫</div>
+        <div class="text">
+          <div class="label">Active Classes</div>
+          <div class="value" id="activeClasses">0</div>
+        </div>
+      </div>
+      <div class="card orange">
+        <div class="icon" aria-label="Average Score icon" title="Average Score">📊</div>
+        <div class="text">
+          <div class="label">Average Score</div>
+          <div class="value" id="averageScore">0%</div>
+        </div>
+      </div>
+    </div>
+    <section id="add-student" class="tab-content active" aria-label="Add Student">
+      <h1>Add Student</h1>
       <form id="registerStudentForm" class="teacher-form">
         <label for="studentUsername">Student Username:</label>
         <input type="text" id="studentUsername" name="studentUsername" required />
@@ -25,13 +100,16 @@
           <option value="5">Grade 5</option>
           <option value="6">Grade 6</option>
         </select>
-        <button type="submit">Register Student</button>
+        <button type="submit" class="acceptBtn">Register Student</button>
       </form>
       <div id="registerMessage"></div>
     </section>
-
-    <section>
-      <h2>Upload New Module</h2>
+    <section id="student-list" class="tab-content" aria-label="Student List">
+      <h1>Student List</h1>
+      <div id="studentsListContainer">Loading students...</div>
+    </section>
+    <section id="add-module" class="tab-content" aria-label="Add Module">
+      <h1>Add Module</h1>
       <form id="uploadModuleForm" class="teacher-form">
         <label for="moduleTitle">Module Title:</label>
         <input type="text" id="moduleTitle" name="moduleTitle" required />
@@ -46,16 +124,11 @@
         </select>
         <label for="moduleFile">Upload Module File (PDF, DOCX, PPT):</label>
         <input type="file" id="moduleFile" name="moduleFile" accept=".pdf,.docx,.ppt,.pptx" required />
-        <button type="submit">Upload Module</button>
+        <button type="submit" class="acceptBtn">Upload Module</button>
       </form>
       <div id="uploadMessage"></div>
     </section>
-
-    <section>
-      <h2>Your Uploaded Modules</h2>
-      <div id="modulesList"></div>
-    </section>
-  </div>
+  </main>
 
   <script>
     // Check if user is teacher
@@ -65,26 +138,84 @@
       window.location.href = '../index.html';
     }
 
+    // Update header user info
+    const userAvatar = document.getElementById('userAvatar');
+    const usernameElem = document.getElementById('username');
+    const gradeBadge = document.getElementById('gradeBadge');
+    if (currentUser) {
+      let displayName = currentUser.name || currentUser.username || 'Teacher';
+      let avatarText = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+      usernameElem.textContent = displayName;
+      userAvatar.textContent = avatarText;
+      if (currentUser.grade) {
+        gradeBadge.textContent = `Grade ${currentUser.grade}`;
+        gradeBadge.style.display = 'inline-block';
+      } else {
+        gradeBadge.style.display = 'none';
+      }
+    }
+
+    // Logout button
     const logoutBtn = document.getElementById('logoutBtn');
     logoutBtn.addEventListener('click', () => {
       localStorage.removeItem('currentUser');
       window.location.href = '../index.html';
     });
 
-    // Load students and registration requests
+    // Tab switching logic
+    const tabLinks = document.querySelectorAll('.tab-link');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetTab = link.getAttribute('data-tab');
+
+        tabLinks.forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+
+        tabContents.forEach(content => {
+          if (content.id === targetTab) {
+            content.classList.add('active');
+          } else {
+            content.classList.remove('active');
+          }
+        });
+      });
+    });
+
+    // Load students from localStorage
     function loadStudents() {
       return JSON.parse(localStorage.getItem('students')) || [];
     }
 
-    function loadRegistrationRequests() {
-      return JSON.parse(localStorage.getItem('registrationRequests')) || [];
+    // Render student list
+    function renderStudents() {
+      const students = loadStudents();
+      const container = document.getElementById('studentsListContainer');
+      container.innerHTML = '';
+
+      if (students.length === 0) {
+        container.textContent = 'No students registered yet.';
+        return;
+      }
+
+      students.forEach(student => {
+        const div = document.createElement('div');
+        div.className = 'student-item';
+        div.style.border = '1px solid #ccc';
+        div.style.padding = '1rem';
+        div.style.marginBottom = '1rem';
+        div.innerHTML = `
+          <strong>${student.username}</strong> - Grade ${student.grade}
+        `;
+        container.appendChild(div);
+      });
     }
 
-    function saveRegistrationRequests(requests) {
-      localStorage.setItem('registrationRequests', JSON.stringify(requests));
-    }
+    renderStudents();
 
-    // Register student (adds to registration requests)
+    // Register student form submission
     const registerStudentForm = document.getElementById('registerStudentForm');
     const registerMessage = document.getElementById('registerMessage');
     registerStudentForm.addEventListener('submit', (e) => {
@@ -94,61 +225,39 @@
       const grade = document.getElementById('studentGrade').value;
 
       if (!username || !password || !grade) {
+        registerMessage.style.color = 'red';
         registerMessage.textContent = 'Please fill all fields.';
         return;
       }
 
       // Check if username already exists in students or registration requests
       const students = loadStudents();
-      const requests = loadRegistrationRequests();
+      const requests = JSON.parse(localStorage.getItem('registrationRequests')) || [];
       if (students.find(s => s.username === username) || requests.find(r => r.username === username)) {
-        registerMessage.textContent = 'Username already exists.';
+        registerMessage.style.color = 'red';
+        registerMessage.textContent = 'Username already exists or pending approval.';
         return;
       }
 
+      // Add new registration request
       requests.push({ username, password, grade });
-      saveRegistrationRequests(requests);
+      localStorage.setItem('registrationRequests', JSON.stringify(requests));
+
       registerMessage.style.color = 'green';
-      registerMessage.textContent = 'Student registration request submitted.';
+      registerMessage.textContent = 'Student registration request submitted. Pending admin approval.';
       registerStudentForm.reset();
-      renderRegistrationRequests();
     });
 
-    // Render registration requests for teacher info
-    function renderRegistrationRequests() {
-      const requests = loadRegistrationRequests();
-      const container = document.getElementById('registerMessage');
-      if (requests.length > 0) {
-        container.textContent = 'There are pending student registration requests for Admin approval.';
-      } else {
-        container.textContent = '';
-      }
-    }
-
-    // Initial render
-    renderRegistrationRequests();
-
-    // Load modules and quizzes from localStorage
+    // Load modules from localStorage
     function loadModules() {
       return JSON.parse(localStorage.getItem('modules')) || [];
-    }
-
-    function loadQuizzes() {
-      return JSON.parse(localStorage.getItem('quizzes')) || [];
-    }
-
-    function saveModules(modules) {
-      localStorage.setItem('modules', JSON.stringify(modules));
-    }
-
-    function saveQuizzes(quizzes) {
-      localStorage.setItem('quizzes', JSON.stringify(quizzes));
     }
 
     // Render modules uploaded by the teacher
     function renderModules() {
       const modules = loadModules();
       const container = document.getElementById('modulesList');
+      if (!container) return;
       container.innerHTML = '';
 
       if (modules.length === 0) {
@@ -181,70 +290,63 @@
       });
     }
 
-    // Delete module and related quizzes
+    // Delete module
     function deleteModule(moduleId) {
       let modules = loadModules();
-      let quizzes = loadQuizzes();
-
       modules = modules.filter(m => m.id !== moduleId);
-      quizzes = quizzes.filter(q => q.moduleId !== moduleId);
-
-      saveModules(modules);
-      saveQuizzes(quizzes);
-
-      alert('Module and related quizzes deleted successfully.');
+      localStorage.setItem('modules', JSON.stringify(modules));
+      alert('Module deleted successfully.');
       renderModules();
     }
 
     renderModules();
 
-    // Handle module upload form submission
+    // Upload module form submission
     const uploadModuleForm = document.getElementById('uploadModuleForm');
     const uploadMessage = document.getElementById('uploadMessage');
+    uploadModuleForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const title = document.getElementById('moduleTitle').value.trim();
+      const description = document.getElementById('moduleDescription').value.trim();
+      const grade = document.getElementById('moduleGrade').value;
+      const fileInput = document.getElementById('moduleFile');
+      const file = fileInput.files[0];
 
-      uploadModuleForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const title = document.getElementById('moduleTitle').value.trim();
-        const description = document.getElementById('moduleDescription').value.trim();
-        const grade = document.getElementById('moduleGrade').value;
-        const fileInput = document.getElementById('moduleFile');
-        const file = fileInput.files[0];
+      if (!title || !description || !grade || !file) {
+        uploadMessage.style.color = 'red';
+        uploadMessage.textContent = 'Please fill all fields and select a file.';
+        return;
+      }
 
-        if (!title || !description || !grade || !file) {
-          uploadMessage.style.color = 'red';
-          uploadMessage.textContent = 'Please fill all fields and select a file.';
-          return;
-        }
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const fileData = event.target.result;
 
-        const reader = new FileReader();
-        reader.onload = function(event) {
-          const fileData = event.target.result;
+        let modules = loadModules();
 
-          let modules = loadModules();
+        // Generate a new unique id for the module
+        const newId = modules.length > 0 ? Math.max(...modules.map(m => m.id)) + 1 : 1;
 
-          // Generate a new unique id for the module
-          const newId = modules.length > 0 ? Math.max(...modules.map(m => m.id)) + 1 : 1;
-
-          const newModule = {
-            id: newId,
-            title,
-            description,
-            grade,
-            fileData: fileData,
-            fileType: file.type
-          };
-
-          modules.push(newModule);
-          saveModules(modules);
-
-          uploadMessage.style.color = 'green';
-          uploadMessage.textContent = 'Module uploaded successfully.';
-          uploadModuleForm.reset();
-          renderModules();
+        const newModule = {
+          id: newId,
+          title,
+          description,
+          grade,
+          fileData: fileData,
+          fileType: file.type
         };
 
-        reader.readAsDataURL(file);
-      });
+        modules.push(newModule);
+        localStorage.setItem('modules', JSON.stringify(modules));
+
+        uploadMessage.style.color = 'green';
+        uploadMessage.textContent = 'Module uploaded successfully.';
+        uploadModuleForm.reset();
+        renderModules();
+      };
+
+      reader.readAsDataURL(file);
+    });
   </script>
 </body>
 </html>
