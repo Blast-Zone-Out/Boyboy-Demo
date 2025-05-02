@@ -194,24 +194,101 @@
       </div>
     </section>
     <section id="add-module" class="tab-content" aria-label="Add Module">
-      <h1>Add Module</h1>
-      <form id="uploadModuleForm" class="teacher-form">
-        <label for="moduleTitle">Module Title:</label>
-        <input type="text" id="moduleTitle" name="moduleTitle" required />
-        <label for="moduleDescription">Description:</label>
-        <textarea id="moduleDescription" name="moduleDescription" required></textarea>
-        <label for="moduleGrade">Grade Level:</label>
-        <select id="moduleGrade" name="moduleGrade" required>
-          <option value="" disabled selected>Select grade</option>
-          <option value="4">Grade 4</option>
-          <option value="5">Grade 5</option>
-          <option value="6">Grade 6</option>
-        </select>
-        <label for="moduleFile">Upload Module File (PDF, DOCX, PPT):</label>
-        <input type="file" id="moduleFile" name="moduleFile" accept=".pdf,.docx,.ppt,.pptx" required />
-        <button type="submit" class="acceptBtn">Upload Module</button>
-      </form>
-      <div id="uploadMessage"></div>
+      <div class="container">
+        <h1 style="text-align: center;">Add Module</h1>
+        <form id="uploadModuleForm" class="teacher-form">
+          <label for="moduleTitle">Module Title:</label>
+          <input type="text" id="moduleTitle" name="moduleTitle" required />
+          <label for="moduleDescription">Description:</label>
+          <textarea id="moduleDescription" name="moduleDescription" required></textarea>
+          <label for="moduleGrade">Grade Level:</label>
+          <select id="moduleGrade" name="moduleGrade" required>
+            <option value="" disabled selected>Select grade</option>
+            <option value="4">Grade 4</option>
+            <option value="5">Grade 5</option>
+            <option value="6">Grade 6</option>
+          </select>
+          <label for="moduleFile">Upload Module File (PDF, DOCX, PPT):</label>
+          <input type="file" id="moduleFile" name="moduleFile" accept=".pdf,.docx,.ppt,.pptx" required />
+          <button type="submit" class="acceptBtn">Upload Module</button>
+        </form>
+        <div id="uploadMessage"></div>
+      </div>
+      <style>
+        #add-module .container {
+          background: #ffffffdd;
+          border-radius: 16px;
+          box-shadow: 0 0 20px rgba(44, 62, 80, 0.2);
+          padding: 2rem 2rem;
+          max-width: 450px;
+          width: 100%;
+          margin-left: auto;
+          margin-right: auto;
+          display: grid;
+          grid-template-columns: 1fr;
+          grid-gap: 1.5rem;
+          position: relative;
+          overflow: hidden;
+        }
+        #add-module h1 {
+          font-weight: 700;
+          color: #34495e;
+          letter-spacing: 0.05em;
+          margin: 0 0 1rem 0;
+          font-size: 2.5rem;
+          text-align: center;
+        }
+        #add-module form {
+          display: grid;
+          grid-gap: 1rem;
+          position: relative;
+          z-index: 1;
+        }
+        #add-module label {
+          font-weight: 600;
+          font-size: 1rem;
+          color: #34495e;
+          letter-spacing: 0.05em;
+        }
+        #add-module input[type="text"],
+        #add-module textarea,
+        #add-module select {
+          padding: 0.75rem 1rem;
+          font-size: 1rem;
+          border: 2px solid #2980b9;
+          border-radius: 8px;
+          background: #f9fbff;
+          transition: border-color 0.3s ease, box-shadow 0.3s ease;
+          font-family: 'Roboto Mono', monospace;
+        }
+        #add-module input[type="text"]:focus,
+        #add-module textarea:focus,
+        #add-module select:focus {
+          border-color: #1abc9c;
+          box-shadow: 0 0 8px #1abc9c;
+          outline: none;
+        }
+        #add-module button {
+          padding: 0.85rem 1rem;
+          font-size: 1.1rem;
+          font-weight: 700;
+          color: #fff;
+          background: linear-gradient(135deg, #2980b9, #1abc9c);
+          border: none;
+          border-radius: 12px;
+          cursor: pointer;
+          transition: background 0.4s ease, transform 0.2s ease;
+          font-family: 'Roboto Mono', monospace;
+          box-shadow: 0 4px 12px rgba(26, 188, 156, 0.4);
+        }
+        #add-module button:hover {
+          background: linear-gradient(135deg, #1abc9c, #2980b9);
+          transform: scale(1.05);
+        }
+        #add-module button:active {
+          transform: scale(0.95);
+        }
+      </style>
     </section>
   </main>
 
