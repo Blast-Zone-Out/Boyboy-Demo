@@ -32,6 +32,80 @@
     .tab-content.active {
       display: block;
     }
+    /* Scoped styles replicating login page design for add student section */
+    #add-student .container {
+      background: #ffffffdd;
+      border-radius: 16px;
+      box-shadow: 0 0 20px rgba(44, 62, 80, 0.2);
+      padding: 2rem 2rem;
+      max-width: 450px;
+      width: 100%;
+      margin-left: auto;
+      margin-right: auto;
+      display: grid;
+      grid-template-columns: 1fr;
+      grid-gap: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    #add-student h1 {
+      font-weight: 700;
+      color: #34495e;
+      letter-spacing: 0.05em;
+      margin: 0 0 1rem 0;
+      font-size: 2.5rem;
+      text-align: center;
+    }
+    #add-student form {
+      display: grid;
+      grid-gap: 1rem;
+      position: relative;
+      z-index: 1;
+    }
+    #add-student label {
+      font-weight: 600;
+      font-size: 1rem;
+      color: #34495e;
+      letter-spacing: 0.05em;
+    }
+    #add-student input[type="text"],
+    #add-student input[type="password"],
+    #add-student select {
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      border: 2px solid #2980b9;
+      border-radius: 8px;
+      background: #f9fbff;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      font-family: 'Roboto Mono', monospace;
+    }
+    #add-student input[type="text"]:focus,
+    #add-student input[type="password"]:focus,
+    #add-student select:focus {
+      border-color: #1abc9c;
+      box-shadow: 0 0 8px #1abc9c;
+      outline: none;
+    }
+    #add-student button {
+      padding: 0.85rem 1rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, #2980b9, #1abc9c);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.4s ease, transform 0.2s ease;
+      font-family: 'Roboto Mono', monospace;
+      box-shadow: 0 4px 12px rgba(26, 188, 156, 0.4);
+    }
+    #add-student button:hover {
+      background: linear-gradient(135deg, #1abc9c, #2980b9);
+      transform: scale(1.05);
+    }
+    #add-student button:active {
+      transform: scale(0.95);
+    }
   </style>
 </head>
 <body>
@@ -40,13 +114,14 @@
       <div class="logo-icon" aria-label="Book icon" title="Book icon">🦉</div>
       <div class="brand-name">MathVenture</div>
     </div>
-    <div class="header-center">
-      <nav>
-        <a href="#" class="tab-link active" data-tab="add-student">Add Student</a>
-        <a href="#" class="tab-link" data-tab="student-list">Student List</a>
-        <a href="#" class="tab-link" data-tab="add-module">Add Module</a>
-      </nav>
-    </div>
+  <div class="header-center">
+    <nav>
+      <a href="#" class="tab-link active" data-tab="dashboard">Dashboard</a>
+      <a href="#" class="tab-link" data-tab="add-student">Add Student</a>
+      <a href="#" class="tab-link" data-tab="student-list">Student List</a>
+      <a href="#" class="tab-link" data-tab="add-module">Add Module</a>
+    </nav>
+  </div>
     <div class="header-right">
       <div id="userAvatar" class="user-avatar" aria-label="User avatar" title="User avatar">TE</div>
       <div id="username" class="username">Teacher</div>
@@ -55,54 +130,58 @@
     </div>
   </header>
   <main>
-    <h1>Teacher Dashboard</h1>
-    <div class="summary-cards">
-      <div class="card blue">
-        <div class="icon" aria-label="Total Students icon" title="Total Students">👥</div>
-        <div class="text">
-          <div class="label">Total Students</div>
-          <div class="value" id="totalStudents">0</div>
+    <section id="dashboard" class="tab-content active" aria-label="Dashboard">
+      <h1>Teacher Dashboard</h1>
+      <div class="summary-cards">
+        <div class="card blue">
+          <div class="icon" aria-label="Total Students icon" title="Total Students">👥</div>
+          <div class="text">
+            <div class="label">Total Students</div>
+            <div class="value" id="totalStudents">0</div>
+          </div>
+        </div>
+        <div class="card purple">
+          <div class="icon" aria-label="Total Modules icon" title="Total Modules">📚</div>
+          <div class="text">
+            <div class="label">Total Modules</div>
+            <div class="value" id="totalModules">0</div>
+          </div>
+        </div>
+        <div class="card green">
+          <div class="icon" aria-label="Active Classes icon" title="Active Classes">🏫</div>
+          <div class="text">
+            <div class="label">Active Classes</div>
+            <div class="value" id="activeClasses">0</div>
+          </div>
+        </div>
+        <div class="card orange">
+          <div class="icon" aria-label="Average Score icon" title="Average Score">📊</div>
+          <div class="text">
+            <div class="label">Average Score</div>
+            <div class="value" id="averageScore">0%</div>
+          </div>
         </div>
       </div>
-      <div class="card purple">
-        <div class="icon" aria-label="Total Modules icon" title="Total Modules">📚</div>
-        <div class="text">
-          <div class="label">Total Modules</div>
-          <div class="value" id="totalModules">0</div>
-        </div>
+    </section>
+    <section id="add-student" class="tab-content" aria-label="Add Student">
+      <div class="container">
+        <h1 style="text-align: center;">Add Student</h1>
+      <form id="registerStudentForm">
+          <label for="studentUsername">Student Username:</label>
+          <input type="text" id="studentUsername" name="studentUsername" required />
+          <label for="studentPassword">Password:</label>
+          <input type="password" id="studentPassword" name="studentPassword" required />
+          <label for="studentGrade">Grade Level:</label>
+          <select id="studentGrade" name="studentGrade" required>
+            <option value="" disabled selected>Select grade</option>
+            <option value="4">Grade 4</option>
+            <option value="5">Grade 5</option>
+            <option value="6">Grade 6</option>
+          </select>
+          <button type="submit" class="acceptBtn">Register Student</button>
+        </form>
+        <div id="registerMessage" style="margin-top: 1rem;"></div>
       </div>
-      <div class="card green">
-        <div class="icon" aria-label="Active Classes icon" title="Active Classes">🏫</div>
-        <div class="text">
-          <div class="label">Active Classes</div>
-          <div class="value" id="activeClasses">0</div>
-        </div>
-      </div>
-      <div class="card orange">
-        <div class="icon" aria-label="Average Score icon" title="Average Score">📊</div>
-        <div class="text">
-          <div class="label">Average Score</div>
-          <div class="value" id="averageScore">0%</div>
-        </div>
-      </div>
-    </div>
-    <section id="add-student" class="tab-content active" aria-label="Add Student">
-      <h1>Add Student</h1>
-      <form id="registerStudentForm" class="teacher-form">
-        <label for="studentUsername">Student Username:</label>
-        <input type="text" id="studentUsername" name="studentUsername" required />
-        <label for="studentPassword">Password:</label>
-        <input type="password" id="studentPassword" name="studentPassword" required />
-        <label for="studentGrade">Grade Level:</label>
-        <select id="studentGrade" name="studentGrade" required>
-          <option value="" disabled selected>Select grade</option>
-          <option value="4">Grade 4</option>
-          <option value="5">Grade 5</option>
-          <option value="6">Grade 6</option>
-        </select>
-        <button type="submit" class="acceptBtn">Register Student</button>
-      </form>
-      <div id="registerMessage"></div>
     </section>
     <section id="student-list" class="tab-content" aria-label="Student List">
       <h1>Student List</h1>
