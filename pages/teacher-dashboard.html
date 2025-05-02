@@ -133,13 +133,7 @@
     <section id="dashboard" class="tab-content active" aria-label="Dashboard">
       <h1>Teacher Dashboard</h1>
       <div class="summary-cards">
-        <div class="card blue">
-          <div class="icon" aria-label="Total Students icon" title="Total Students">👥</div>
-          <div class="text">
-            <div class="label">Total Students</div>
-            <div class="value" id="totalStudents">0</div>
-          </div>
-        </div>
+        <!-- Total Students card removed as per user request -->
         <div class="card purple">
           <div class="icon" aria-label="Total Modules icon" title="Total Modules">📚</div>
           <div class="text">
@@ -188,7 +182,6 @@
       <div class="student-list-wrapper">
         <form id="studentSearchForm" class="student-search-form" role="search" aria-label="Search students form">
           <input type="text" id="studentSearchInput" placeholder="Search students..." aria-label="Search students" />
-          <button type="submit" id="studentSearchButton" aria-label="Search button">Search</button>
         </form>
         <div id="studentsListContainer" class="students-list-container">Loading students...</div>
       </div>
@@ -387,13 +380,14 @@
     });
 
     // Optional: Search button triggers the same filtering
-    const studentSearchButton = document.getElementById('studentSearchButton');
-    studentSearchButton.addEventListener('click', () => {
-      const query = studentSearchInput.value.toLowerCase();
-      const students = loadStudents();
-      const filtered = students.filter(s => s.username.toLowerCase().includes(query));
-      renderStudents(filtered);
-    });
+    // Removed event listener for studentSearchButton since button was removed
+    // const studentSearchButton = document.getElementById('studentSearchButton');
+    // studentSearchButton.addEventListener('click', () => {
+    //   const query = studentSearchInput.value.toLowerCase();
+    //   const students = loadStudents();
+    //   const filtered = students.filter(s => s.username.toLowerCase().includes(query));
+    //   renderStudents(filtered);
+    // });
 
     // Register student form submission
     const registerStudentForm = document.getElementById('registerStudentForm');
@@ -477,9 +471,20 @@
       localStorage.setItem('modules', JSON.stringify(modules));
       alert('Module deleted successfully.');
       renderModules();
+      updateTotalModulesCount();
     }
 
     renderModules();
+
+    // Update total modules count in dashboard
+    function updateTotalModulesCount() {
+      const totalModulesElem = document.getElementById('totalModules');
+      const modules = loadModules();
+      totalModulesElem.textContent = modules.length;
+    }
+
+    // Initial update of total modules count on page load
+    updateTotalModulesCount();
 
     // Upload module form submission
     const uploadModuleForm = document.getElementById('uploadModuleForm');
@@ -523,6 +528,7 @@
         uploadMessage.textContent = 'Module uploaded successfully.';
         uploadModuleForm.reset();
         renderModules();
+        updateTotalModulesCount();
       };
 
       reader.readAsDataURL(file);

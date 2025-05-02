@@ -143,8 +143,8 @@
 
     // Dynamically update total modules count from localStorage
     const totalModulesElem = document.getElementById('totalModules');
-    const finalAssessmentFiles = JSON.parse(localStorage.getItem('finalAssessmentFiles')) || [];
-    totalModulesElem.textContent = finalAssessmentFiles.length;
+    const modules = JSON.parse(localStorage.getItem('modules')) || [];
+    totalModulesElem.textContent = modules.length;
 
     // Existing functions for registration requests and system overview are removed
     // because the new design does not include those sections.
