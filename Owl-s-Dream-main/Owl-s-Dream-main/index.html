@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Owl's Dream</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+      <!-- Start Screen -->
+      <div id="start-screen" class="card">
+        <h1>Welcome to Owl's Dream!</h1>
+        <input type="text" id="playerName" placeholder="Enter your name" required />
+        <button id="start-btn">Start Quiz</button>
+      </div>
+  
+      <!-- Difficulty Screen -->
+      <div id="difficulty-screen" class="card hidden">
+        <h2>Select Difficulty</h2>
+        <button class="btn" onclick="setDifficulty('easy')">Easy</button>
+        <button class="btn" onclick="setDifficulty('hard')">Hard</button>
+      </div>
+  
+      <!-- Quiz Container -->
+      <div id="quiz-container" class="card hidden">
+        <h2 id="question">Question here</h2>
+        <div id="answer-buttons" class="btn-container"></div>
+        <div id="timer">Time left: <span id="time">30</span>s</div>
+        <button id="next-btn" class="hidden">Next</button>
+      </div>
+
+      
+  
+      <!-- Result Screen -->
+      <div id="result-screen" class="card hidden">
+        <h2>Quiz Finished!</h2>
+        <p id="final-score"></p>
+        <a href="leaderboard.html" class="btn">View Leaderboard</a>
+        <button onclick="location.reload()">Play Again</button>
+      </div>
+    </div>
+    
+    <!-- Greeting Animation -->
+<div id="intro-screen" class="">
+  <img id="intro-image" src="./assets/greetings.png" alt="Greetings" style="max-width: 50%; height: auto;" />
+</div>
+
+
+    <script src="script.js"></script>
+  </body>
+</html>
