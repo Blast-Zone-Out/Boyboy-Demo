@@ -156,6 +156,13 @@
           </div>
         </div>
       </div>
+      <section class="panel quick-actions" aria-label="Quick Actions">
+        <h2>Quick Actions</h2>
+        <a href="final-assessment.html" class="quick-action-btn" role="button" tabindex="0" aria-label="Add Final Assessment Module" style="text-decoration:none; color:inherit;">
+          <div class="icon">📕</div>
+          <div>Add Final Assessment Module</div>
+        </a>
+      </section>
     </section>
     <section id="add-student" class="tab-content" aria-label="Add Student">
       <div class="container">
@@ -480,7 +487,9 @@
     function updateTotalModulesCount() {
       const totalModulesElem = document.getElementById('totalModules');
       const modules = loadModules();
-      totalModulesElem.textContent = modules.length;
+      const finalAssessmentFiles = JSON.parse(localStorage.getItem('finalAssessmentFiles')) || [];
+      const totalCount = modules.length + finalAssessmentFiles.length;
+      totalModulesElem.textContent = totalCount;
     }
 
     // Initial update of total modules count on page load

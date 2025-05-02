@@ -75,10 +75,6 @@
         <div class="icon">🔑</div>
         <div>Change Teacher Password</div>
       </div>
-      <a href="final-assessment.html" class="quick-action-btn" role="button" tabindex="0" aria-label="Add Final Assessment Module" style="text-decoration:none; color:inherit;">
-        <div class="icon">📕</div>
-        <div>Add Final Assessment Module</div>
-      </a>
       </section>
 
     </div>
@@ -141,10 +137,12 @@
     const students = JSON.parse(localStorage.getItem('students')) || [];
     totalStudentsElem.textContent = students.length;
 
-    // Dynamically update total modules count from localStorage
+    // Dynamically update total modules count from localStorage including final assessment files
     const totalModulesElem = document.getElementById('totalModules');
     const modules = JSON.parse(localStorage.getItem('modules')) || [];
-    totalModulesElem.textContent = modules.length;
+    const finalAssessmentFiles = JSON.parse(localStorage.getItem('finalAssessmentFiles')) || [];
+    const totalCount = modules.length + finalAssessmentFiles.length;
+    totalModulesElem.textContent = totalCount;
 
     // Existing functions for registration requests and system overview are removed
     // because the new design does not include those sections.
