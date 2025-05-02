@@ -5,6 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Final Assessment Module</title>
   <link rel="stylesheet" href="../css/admin-dashboard-modern.css" />
+  <style>
+    /* Header center nav link styles to match teacher dashboard */
+    .header-center nav a {
+      margin: 0 1rem;
+      text-decoration: none;
+      color: white;
+      font-weight: 500;
+      font-size: 1rem;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+    .header-center nav a:hover {
+      color: #93c5fd; /* lighter blue on hover */
+    }
+    .header-center nav a:focus {
+      outline: none; /* remove focus outline */
+      box-shadow: none; /* remove focus box shadow */
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -14,10 +35,10 @@
     </div>
     <div class="header-center">
       <nav>
-        <a href="admin-dashboard.html">Dashboard</a>
-        <a href="#">Learn</a>
-        <a href="#">Practice</a>
-        <a href="admin-analytics.html">Analytics</a>
+        <a href="teacher-dashboard.html#dashboard" class="tab-link active" data-tab="dashboard">Dashboard</a>
+        <a href="teacher-dashboard.html#add-student" class="tab-link" data-tab="add-student">Add Student</a>
+        <a href="teacher-dashboard.html#student-list" class="tab-link" data-tab="student-list">Student List</a>
+        <a href="teacher-dashboard.html#add-module" class="tab-link" data-tab="add-module">Add Module</a>
       </nav>
     </div>
     <div class="header-right">
@@ -85,182 +106,183 @@
   </main>
 
   <script>
-    // Check if user is admin only
-    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    if (!currentUser || currentUser.role !== 'admin') {
-      alert('Access denied. Please login as Admin.');
-      window.location.href = '../index.html';
+  // Check if user is admin or teacher
+  const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+  if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'teacher')) {
+    alert('Access denied. Please login as Admin or Teacher.');
+    window.location.href = '../index.html';
+  }
+
+  // Logout button
+  const logoutBtn = document.getElementById('logoutBtn');
+  logoutBtn.addEventListener('click', () => {
+    localStorage.removeItem('currentUser');
+    window.location.href = '../index.html';
+  });
+
+  // Update header user info
+  const userAvatar = document.getElementById('userAvatar');
+  const usernameElem = document.getElementById('username');
+  const gradeBadge = document.getElementById('gradeBadge');
+
+  if (currentUser) {
+    let displayName = '';
+    let avatarText = '';
+    let gradeText = '';
+
+    if (currentUser.role === 'admin') {
+      displayName = 'Admin';
+      avatarText = 'AD';
+      gradeText = '';
+    } else if (currentUser.role === 'teacher') {
+      displayName = 'Teacher';
+      avatarText = 'TE';
+      gradeText = '';
+    } else if (currentUser.role === 'student') {
+      displayName = currentUser.name || currentUser.username || 'Student';
+      avatarText = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+      gradeText = currentUser.grade ? `Grade ${currentUser.grade}` : '';
+    } else {
+      displayName = currentUser.name || currentUser.username || 'User';
+      avatarText = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+      gradeText = '';
     }
 
-    const logoutBtn = document.getElementById('logoutBtn');
-    logoutBtn.addEventListener('click', () => {
-      localStorage.removeItem('currentUser');
-      window.location.href = '../index.html';
+    usernameElem.textContent = displayName;
+    userAvatar.textContent = avatarText;
+    if (gradeText) {
+      gradeBadge.textContent = gradeText;
+      gradeBadge.style.display = 'inline-block';
+    } else {
+      gradeBadge.style.display = 'none';
+    }
+  }
+
+  // Store files metadata in localStorage under key 'finalAssessmentFiles'
+  // Each file metadata: { id, name, grade, quarter, url }
+
+  const uploadForm = document.getElementById('uploadForm');
+  const gradeSelect = document.getElementById('gradeSelect');
+  const quarterSelect = document.getElementById('quarterSelect');
+  const fileInput = document.getElementById('fileInput');
+
+  const viewGradeSelect = document.getElementById('viewGradeSelect');
+  const viewQuarterSelect = document.getElementById('viewQuarterSelect');
+  const filesContainer = document.getElementById('filesContainer');
+
+  function getStoredFiles() {
+    return JSON.parse(localStorage.getItem('finalAssessmentFiles') || '[]');
+  }
+
+  function saveStoredFiles(files) {
+    localStorage.setItem('finalAssessmentFiles', JSON.stringify(files));
+  }
+
+  function generateId() {
+    return '_' + Math.random().toString(36).substr(2, 9);
+  }
+
+  function renderFiles() {
+    const files = getStoredFiles();
+    const filterGrade = viewGradeSelect.value;
+    const filterQuarter = viewQuarterSelect.value;
+
+    let filteredFiles = files;
+    if (filterGrade !== 'all') {
+      filteredFiles = filteredFiles.filter(f => f.grade === filterGrade);
+    }
+    if (filterQuarter !== 'all') {
+      filteredFiles = filteredFiles.filter(f => f.quarter === filterQuarter);
+    }
+
+    filesContainer.innerHTML = '';
+    if (filteredFiles.length === 0) {
+      filesContainer.textContent = 'No files found for selected filters.';
+      return;
+    }
+
+    filteredFiles.forEach(file => {
+      const fileDiv = document.createElement('div');
+      fileDiv.className = 'file-item';
+
+      const title = document.createElement('h3');
+      title.textContent = `${file.name} (Grade ${file.grade} - Quarter ${file.quarter})`;
+      fileDiv.appendChild(title);
+
+      if (file.url.endsWith('.pdf')) {
+        const embed = document.createElement('embed');
+        embed.src = file.url;
+        embed.type = 'application/pdf';
+        fileDiv.appendChild(embed);
+      } else if (file.url.endsWith('.docx')) {
+        // For DOCX, use Google Docs viewer iframe for online viewing
+        const iframe = document.createElement('iframe');
+        iframe.src = `https://docs.google.com/gview?url=${encodeURIComponent(window.location.origin + '/' + file.url)}&embedded=true`;
+        iframe.width = '100%';
+        iframe.height = '400px';
+        iframe.frameBorder = '0';
+        fileDiv.appendChild(iframe);
+      } else {
+        const link = document.createElement('a');
+        link.href = file.url;
+        link.textContent = 'Download file';
+        fileDiv.appendChild(link);
+      }
+
+      filesContainer.appendChild(fileDiv);
     });
+  }
 
-    // Dynamically update username, avatar, and grade badge based on currentUser
-    const userAvatar = document.getElementById('userAvatar');
-    const usernameElem = document.getElementById('username');
-    const gradeBadge = document.getElementById('gradeBadge');
+  uploadForm.addEventListener('submit', (e) => {
+    e.preventDefault();
 
-    if (currentUser) {
-      let displayName = '';
-      let avatarText = '';
-      let gradeText = '';
+    const grade = gradeSelect.value;
+    const quarter = quarterSelect.value;
+    const file = fileInput.files[0];
 
-      if (currentUser.role === 'admin') {
-        displayName = 'Admin';
-        avatarText = 'AD';
-        gradeText = '';
-      } else if (currentUser.role === 'teacher') {
-        displayName = 'Teacher';
-        avatarText = 'TE';
-        gradeText = '';
-      } else if (currentUser.role === 'student') {
-        displayName = currentUser.name || currentUser.username || 'Student';
-        avatarText = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-        gradeText = currentUser.grade ? `Grade ${currentUser.grade}` : '';
-      } else {
-        displayName = currentUser.name || currentUser.username || 'User';
-        avatarText = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-        gradeText = '';
-      }
-
-      usernameElem.textContent = displayName;
-      userAvatar.textContent = avatarText;
-      if (gradeText) {
-        gradeBadge.textContent = gradeText;
-        gradeBadge.style.display = 'inline-block';
-      } else {
-        gradeBadge.style.display = 'none';
-      }
+    if (!grade || !quarter || !file) {
+      alert('Please select grade, quarter, and a file to upload.');
+      return;
     }
 
-    // Store files metadata in localStorage under key 'finalAssessmentFiles'
-    // Each file metadata: { id, name, grade, quarter, url }
-
-    const uploadForm = document.getElementById('uploadForm');
-    const gradeSelect = document.getElementById('gradeSelect');
-    const quarterSelect = document.getElementById('quarterSelect');
-    const fileInput = document.getElementById('fileInput');
-
-    const viewGradeSelect = document.getElementById('viewGradeSelect');
-    const viewQuarterSelect = document.getElementById('viewQuarterSelect');
-    const filesContainer = document.getElementById('filesContainer');
-
-    function getStoredFiles() {
-      return JSON.parse(localStorage.getItem('finalAssessmentFiles') || '[]');
-    }
-
-    function saveStoredFiles(files) {
-      localStorage.setItem('finalAssessmentFiles', JSON.stringify(files));
-    }
-
-    function generateId() {
-      return '_' + Math.random().toString(36).substr(2, 9);
-    }
-
-    function renderFiles() {
+    // Save file to localStorage as base64 (for demo purposes)
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      const base64Data = event.target.result;
       const files = getStoredFiles();
-      const filterGrade = viewGradeSelect.value;
-      const filterQuarter = viewQuarterSelect.value;
 
-      let filteredFiles = files;
-      if (filterGrade !== 'all') {
-        filteredFiles = filteredFiles.filter(f => f.grade === filterGrade);
-      }
-      if (filterQuarter !== 'all') {
-        filteredFiles = filteredFiles.filter(f => f.quarter === filterQuarter);
-      }
+      // Create a unique id and file name
+      const id = generateId();
+      const fileName = file.name;
 
-      filesContainer.innerHTML = '';
-      if (filteredFiles.length === 0) {
-        filesContainer.textContent = 'No files found for selected filters.';
-        return;
-      }
-
-      filteredFiles.forEach(file => {
-        const fileDiv = document.createElement('div');
-        fileDiv.className = 'file-item';
-
-        const title = document.createElement('h3');
-        title.textContent = `${file.name} (Grade ${file.grade} - Quarter ${file.quarter})`;
-        fileDiv.appendChild(title);
-
-        if (file.url.endsWith('.pdf')) {
-          const embed = document.createElement('embed');
-          embed.src = file.url;
-          embed.type = 'application/pdf';
-          fileDiv.appendChild(embed);
-        } else if (file.url.endsWith('.docx')) {
-          // For DOCX, use Google Docs viewer iframe for online viewing
-          const iframe = document.createElement('iframe');
-          iframe.src = `https://docs.google.com/gview?url=${encodeURIComponent(window.location.origin + '/' + file.url)}&embedded=true`;
-          iframe.width = '100%';
-          iframe.height = '400px';
-          iframe.frameBorder = '0';
-          fileDiv.appendChild(iframe);
-        } else {
-          const link = document.createElement('a');
-          link.href = file.url;
-          link.textContent = 'Download file';
-          fileDiv.appendChild(link);
-        }
-
-        filesContainer.appendChild(fileDiv);
+      // Save file metadata and base64 data URL
+      files.push({
+        id,
+        name: fileName,
+        grade,
+        quarter,
+        url: base64Data
       });
-    }
 
-    uploadForm.addEventListener('submit', (e) => {
-      e.preventDefault();
+      saveStoredFiles(files);
 
-      const grade = gradeSelect.value;
-      const quarter = quarterSelect.value;
-      const file = fileInput.files[0];
+      // Add recent activity for module upload
+      const recentActivities = JSON.parse(localStorage.getItem('recentActivities')) || [];
+      recentActivities.unshift(`New module uploaded: ${fileName} for Grade ${grade}, Quarter ${quarter}`);
+      localStorage.setItem('recentActivities', JSON.stringify(recentActivities));
 
-      if (!grade || !quarter || !file) {
-        alert('Please select grade, quarter, and a file to upload.');
-        return;
-      }
+      alert('File uploaded successfully.');
+      uploadForm.reset();
+      renderFiles();
+    };
+    reader.readAsDataURL(file);
+  });
 
-      // Save file to localStorage as base64 (for demo purposes)
-      const reader = new FileReader();
-      reader.onload = function(event) {
-        const base64Data = event.target.result;
-        const files = getStoredFiles();
+  viewGradeSelect.addEventListener('change', renderFiles);
+  viewQuarterSelect.addEventListener('change', renderFiles);
 
-        // Create a unique id and file name
-        const id = generateId();
-        const fileName = file.name;
-
-        // Save file metadata and base64 data URL
-        files.push({
-          id,
-          name: fileName,
-          grade,
-          quarter,
-          url: base64Data
-        });
-
-        saveStoredFiles(files);
-
-        // Add recent activity for module upload
-        const recentActivities = JSON.parse(localStorage.getItem('recentActivities')) || [];
-        recentActivities.unshift(`New module uploaded: ${fileName} for Grade ${grade}, Quarter ${quarter}`);
-        localStorage.setItem('recentActivities', JSON.stringify(recentActivities));
-
-        alert('File uploaded successfully.');
-        uploadForm.reset();
-        renderFiles();
-      };
-      reader.readAsDataURL(file);
-    });
-
-    viewGradeSelect.addEventListener('change', renderFiles);
-    viewQuarterSelect.addEventListener('change', renderFiles);
-
-    // Initial render
-    renderFiles();
+  // Initial render
+  renderFiles();
   </script>
 </body>
 </html>
