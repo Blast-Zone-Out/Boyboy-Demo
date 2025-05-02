@@ -295,3 +295,79 @@ main h1 {
 .declineBtn:active {
   transform: scale(0.95);
 }
+
+.student-list-wrapper {
+  background-color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.student-search-form {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.student-search-form input[type="text"] {
+  flex-grow: 1;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  border: 2px solid #2980b9;
+  border-radius: 8px;
+  font-family: 'Poppins', sans-serif;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.student-search-form input[type="text"]:focus {
+  border-color: #1abc9c;
+  box-shadow: 0 0 8px #1abc9c;
+  outline: none;
+}
+
+.student-search-form button {
+  padding: 0.55rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, #2980b9, #1abc9c);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  box-shadow: 0 4px 12px rgba(26, 188, 156, 0.4);
+  transition: background 0.4s ease, transform 0.2s ease;
+}
+
+.student-search-form button:hover {
+  background: linear-gradient(135deg, #1abc9c, #2980b9);
+  transform: scale(1.05);
+}
+
+.student-search-form button:active {
+  transform: scale(0.95);
+}
+
+.students-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.student-item {
+  border: 1px solid #ccc;
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.05);
+  transition: box-shadow 0.3s ease;
+  cursor: default;
+}
+
+.student-item:hover {
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.15);
+}

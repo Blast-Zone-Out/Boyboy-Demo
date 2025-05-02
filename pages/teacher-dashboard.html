@@ -183,9 +183,15 @@
         <div id="registerMessage" style="margin-top: 1rem;"></div>
       </div>
     </section>
-    <section id="student-list" class="tab-content" aria-label="Student List">
+<section id="student-list" class="tab-content" aria-label="Student List">
       <h1>Student List</h1>
-      <div id="studentsListContainer">Loading students...</div>
+      <div class="student-list-wrapper">
+        <form id="studentSearchForm" class="student-search-form" role="search" aria-label="Search students form">
+          <input type="text" id="studentSearchInput" placeholder="Search students..." aria-label="Search students" />
+          <button type="submit" id="studentSearchButton" aria-label="Search button">Search</button>
+        </form>
+        <div id="studentsListContainer" class="students-list-container">Loading students...</div>
+      </div>
     </section>
     <section id="add-module" class="tab-content" aria-label="Add Module">
       <h1>Add Module</h1>
@@ -269,8 +275,8 @@
     }
 
     // Render student list
-    function renderStudents() {
-      const students = loadStudents();
+    function renderStudents(filteredStudents) {
+      const students = filteredStudents || loadStudents();
       const container = document.getElementById('studentsListContainer');
       container.innerHTML = '';
 
@@ -293,6 +299,24 @@
     }
 
     renderStudents();
+
+    // Live search functionality
+    const studentSearchInput = document.getElementById('studentSearchInput');
+    studentSearchInput.addEventListener('input', () => {
+      const query = studentSearchInput.value.toLowerCase();
+      const students = loadStudents();
+      const filtered = students.filter(s => s.username.toLowerCase().includes(query));
+      renderStudents(filtered);
+    });
+
+    // Optional: Search button triggers the same filtering
+    const studentSearchButton = document.getElementById('studentSearchButton');
+    studentSearchButton.addEventListener('click', () => {
+      const query = studentSearchInput.value.toLowerCase();
+      const students = loadStudents();
+      const filtered = students.filter(s => s.username.toLowerCase().includes(query));
+      renderStudents(filtered);
+    });
 
     // Register student form submission
     const registerStudentForm = document.getElementById('registerStudentForm');
