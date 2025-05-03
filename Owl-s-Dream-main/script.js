@@ -295,8 +295,12 @@ function endQuiz() {
 }
 
 function saveToLeaderboard(name, score) {
-  const leaderboard = JSON.parse(localStorage.getItem("leaderboard") || "[]");
-  leaderboard.push({ name, score });
+  const normalizedName = name.trim().toLowerCase();
+  let leaderboard = JSON.parse(localStorage.getItem("leaderboard") || "[]");
+  // Remove any existing entries with the same normalized name
+  leaderboard = leaderboard.filter(entry => entry.name.trim().toLowerCase() !== normalizedName);
+  // Add the current attempt's score with normalized name
+  leaderboard.push({ name: name.trim(), score });
   leaderboard.sort((a, b) => b.score - a.score);
   const top5 = leaderboard.slice(0, 5);
   localStorage.setItem("leaderboard", JSON.stringify(top5));
