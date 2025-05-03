@@ -44,10 +44,22 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const startScreen = document.getElementById("start-screen");
- 
+
+  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+  console.log("currentUser from localStorage:", currentUser);
+
+  if (currentUser && currentUser.role === "student") {
+    const studentName = currentUser.name || currentUser.username || "";
+    console.log("Setting name input value to:", studentName);
+    nameInput.value = studentName;
+    nameInput.readOnly = true;
+    nameInput.disabled = true; // disable input to prevent typing
+  }
+
   startButton.addEventListener("click", () => {
     playerName = nameInput.value.trim();
-    if (!playerName) {
+    console.log("Start button clicked. playerName:", playerName, "nameInput.disabled:", nameInput.disabled);
+    if (!playerName && !nameInput.disabled) {
       alert("Please enter your name to start the quiz.");
       return;
     }
@@ -59,31 +71,19 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => {
       startScreen.classList.add("hidden");
       gameContainer.classList.remove("hidden");
-    }, 500); // 0.5s to match fadeOut animation
-  
-    leaderboardContainer.classList.add("hidden");
-    score = 0;
-    scoreElement.textContent = `Score: ${score}`;
-    currentQuestionIndex = 0;
-  
-    const combinedQuestions = [...allQuestions.easy, ...allQuestions.hard];
-    questions = getRandomQuestions(combinedQuestions, 10);
-  
-    showQuestion();
-    startTimer();
+
+      leaderboardContainer.classList.add("hidden");
+      score = 0;
+      scoreElement.textContent = `Score: ${score}`;
+      currentQuestionIndex = 0;
+
+      const combinedQuestions = [...allQuestions.easy, ...allQuestions.hard];
+      questions = getRandomQuestions(combinedQuestions, 10);
+
+      showQuestion();
+      startTimer();
+    }, 500);
   });
- 
- // New code to set playerNameInput value and make it read-only
-document.addEventListener("DOMContentLoaded", () => {
-  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-  if (currentUser && currentUser.role === "student" && currentUser.username) {
-    nameInput.value = currentUser.username;
-    nameInput.readOnly = true;
-  }
-});
-  
-  
-  
 
   function getRandomQuestions(questionArray, num) {
     const shuffled = questionArray.sort(() => 0.5 - Math.random());
@@ -207,11 +207,20 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  leaderboardButton.addEventListener("click", showLeaderboard);
-  backButton.addEventListener("click", () => {
-    leaderboardContainer.classList.add("hidden");
-    gameContainer.classList.remove("hidden");
-  });
+  if (leaderboardButton) {
+    leaderboardButton.addEventListener("click", showLeaderboard);
+  }
+  if (backButton) {
+    backButton.addEventListener("click", () => {
+      const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+      if (currentUser && currentUser.role === "student") {
+        window.location.href = "../pages/student-dashboard.html";
+      } else {
+        leaderboardContainer.classList.add("hidden");
+        gameContainer.classList.remove("hidden");
+      }
+    });
+  }
 
   function showTutorialPrompt(question) {
     const promptBox = document.createElement("div");

@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
   
-        if (password === student.password) {
+          if (password === student.password) {
           // Update lastLogin timestamp
           const students = loadStudents();
           const studentIndex = students.findIndex(s => s.username === selectedStudent);
@@ -119,8 +119,8 @@ document.addEventListener('DOMContentLoaded', () => {
             students[studentIndex].lastLogin = new Date().toISOString();
             localStorage.setItem('students', JSON.stringify(students));
           }
-          localStorage.setItem('currentUser', JSON.stringify({ role: 'student', username: student.username }));
-          window.location.href = 'pages/student-dashboard.html';
+          localStorage.setItem('currentUser', JSON.stringify({ role: 'student', username: student.username, name: student.name || student.username, grade: student.grade }));
+          window.location.href = 'pages/new-dashboard.html';
         } else {
           loginMessage.textContent = 'Incorrect password for Student.';
           loader.style.display = 'none';

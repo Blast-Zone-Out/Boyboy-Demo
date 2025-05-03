@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>New Dashboard</title>
+  <link rel="stylesheet" href="../css/admin-dashboard-modern.css" />
+  <style>
+    .header-center nav a {
+      margin: 0 1rem;
+      text-decoration: none;
+      color: white;
+      font-weight: 500;
+      font-size: 1rem;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+    .header-center nav a:hover {
+      color: #93c5fd; /* lighter blue on hover */
+    }
+    .header-center nav a:focus {
+      outline: none; /* remove focus outline */
+      box-shadow: none; /* remove focus box shadow */
+    }
+  
+    .tab-content {
+      display: block; /* Show all tab contents since no tab switching */
+      padding: 1rem 0;
+    }
+    /* Scoped styles replicating login page design for add student section */
+    #add-student .container {
+      background: #ffffffdd;
+      border-radius: 16px;
+      box-shadow: 0 0 20px rgba(44, 62, 80, 0.2);
+      padding: 2rem 2rem;
+      max-width: 450px;
+      width: 100%;
+      margin-left: auto;
+      margin-right: auto;
+      display: grid;
+      grid-template-columns: 1fr;
+      grid-gap: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    #add-student h1 {
+      font-weight: 700;
+      color: #34495e;
+      letter-spacing: 0.05em;
+      margin: 0 0 1rem 0;
+      font-size: 2.5rem;
+      text-align: center;
+    }
+    #add-student form {
+      display: grid;
+      grid-gap: 1rem;
+      position: relative;
+      z-index: 1;
+    }
+    #add-student label {
+      font-weight: 600;
+      font-size: 1rem;
+      color: #34495e;
+      letter-spacing: 0.05em;
+    }
+    #add-student input[type="text"],
+    #add-student input[type="password"],
+    #add-student select {
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      border: 2px solid #2980b9;
+      border-radius: 8px;
+      background: #f9fbff;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      font-family: 'Roboto Mono', monospace;
+    }
+    #add-student input[type="text"]:focus,
+    #add-student input[type="password"]:focus,
+    #add-student select:focus {
+      border-color: #1abc9c;
+      box-shadow: 0 0 8px #1abc9c;
+      outline: none;
+    }
+    #add-student button {
+      padding: 0.85rem 1rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, #2980b9, #1abc9c);
+      border: none;
+      border-radius: 12px;
+      cursor: default; /* disable pointer cursor */
+      font-family: 'Roboto Mono', monospace;
+      box-shadow: 0 4px 12px rgba(26, 188, 156, 0.4);
+    }
+    #add-student button:hover {
+      background: linear-gradient(135deg, #2980b9, #1abc9c); /* no hover effect */
+      transform: none;
+    }
+    #add-student button:active {
+      transform: none;
+    }
+    /* Add Module section styles */
+    #add-module .container {
+      background: #ffffffdd;
+      border-radius: 16px;
+      box-shadow: 0 0 20px rgba(44, 62, 80, 0.2);
+      padding: 2rem 2rem;
+      max-width: 450px;
+      width: 100%;
+      margin-left: auto;
+      margin-right: auto;
+      display: grid;
+      grid-template-columns: 1fr;
+      grid-gap: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    #add-module h1 {
+      font-weight: 700;
+      color: #34495e;
+      letter-spacing: 0.05em;
+      margin: 0 0 1rem 0;
+      font-size: 2.5rem;
+      text-align: center;
+    }
+    #add-module form {
+      display: grid;
+      grid-gap: 1rem;
+      position: relative;
+      z-index: 1;
+    }
+    #add-module label {
+      font-weight: 600;
+      font-size: 1rem;
+      color: #34495e;
+      letter-spacing: 0.05em;
+    }
+    #add-module input[type="text"],
+    #add-module textarea,
+    #add-module select {
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      border: 2px solid #2980b9;
+      border-radius: 8px;
+      background: #f9fbff;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      font-family: 'Roboto Mono', monospace;
+    }
+    #add-module input[type="text"]:focus,
+    #add-module textarea:focus,
+    #add-module select:focus {
+      border-color: #1abc9c;
+      box-shadow: 0 0 8px #1abc9c;
+      outline: none;
+    }
+    #add-module button {
+      padding: 0.85rem 1rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, #2980b9, #1abc9c);
+      border: none;
+      border-radius: 12px;
+      cursor: default; /* disable pointer cursor */
+      font-family: 'Roboto Mono', monospace;
+      box-shadow: 0 4px 12px rgba(26, 188, 156, 0.4);
+    }
+    #add-module button:hover {
+      background: linear-gradient(135deg, #2980b9, #1abc9c); /* no hover effect */
+      transform: none;
+    }
+    #add-module button:active {
+      transform: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-left">
+      <div class="logo-icon" aria-label="Book icon" title="Book icon">🦉</div>
+      <div class="brand-name">MathVenture</div>
+    </div>
+  <div class="header-center">
+<nav>
+  <a href="new-dashboard.html" class="tab-link active" data-tab="dashboard">Dashboard</a>
+  <a href="#" class="tab-link" data-tab="game">Game</a>
+  <a href="final-assessment.html" class="tab-link" data-tab="final-assessment">Final Assessment</a>
+</nav>
+  </div>
+    <div class="header-right">
+      <div id="userAvatar" class="user-avatar" aria-label="User avatar" title="User avatar">TE</div>
+      <div id="username" class="username">Teacher</div>
+      <div id="gradeBadge" class="grade-badge" style="display:none;"></div>
+      <div id="logoutBtn" class="logout" role="button" tabindex="0" aria-label="Logout">Logout</div>
+    </div>
+  </header>
+  <main>
+    <section id="dashboard" class="tab-content active" aria-label="Dashboard">
+      <h1>Student Dashboard</h1>
+      <div class="summary-cards">
+        <div class="card purple">
+          <div class="icon" aria-label="Total Modules icon" title="Total Modules">📚</div>
+          <div class="text">
+            <div class="label">Total Modules</div>
+            <div class="value" id="totalModules">0</div>
+          </div>
+        </div>
+        <div class="card green">
+          <div class="icon" aria-label="Active Classes icon" title="Active Classes">🏫</div>
+          <div class="text">
+            <div class="label">Active Classes</div>
+            <div class="value" id="activeClasses">0</div>
+          </div>
+        </div>
+        <div class="card orange">
+          <div class="icon" aria-label="Average Score icon" title="Average Score">📊</div>
+          <div class="text">
+            <div class="label">Average Score</div>
+            <div class="value" id="averageScore">0%</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="game" class="tab-content" aria-label="Game" style="display:none;">
+      <h1>Assesment - Let's play some game</h1>
+      <div class="quick-actions">
+        <div class="quick-action-btn" role="button" tabindex="0" aria-label="Start New Game" id="startNewGameBtn">
+          <div class="icon">🎮</div>
+          <div>Play Game</div>
+        </div>
+        <div class="quick-action-btn" role="button" tabindex="0" aria-label="View Game Scores">
+          <div class="icon">📊</div>
+          <div>View Game Scores</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="final-assessment" class="tab-content" aria-label="Final Assessment" style="display:none;">
+      <h1>Final Assessment</h1>
+      <div class="quick-actions">
+        <div class="quick-action-btn" role="button" tabindex="0" aria-label="Start Final Assessment">
+          <div class="icon">📝</div>
+          <div>Start Final Assessment</div>
+        </div>
+        <div class="quick-action-btn" role="button" tabindex="0" aria-label="View Assessment Results">
+          <div class="icon">📈</div>
+          <div>View Assessment Results</div>
+        </div>
+      </div>
+    </section>
+   
+  </main>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+      if (currentUser && currentUser.role === "student") {
+        const usernameDiv = document.getElementById("username");
+        if (usernameDiv) {
+          usernameDiv.textContent = currentUser.name || currentUser.username || "Student";
+        }
+        const userAvatarDiv = document.getElementById("userAvatar");
+        if (userAvatarDiv) {
+          const initial = (currentUser.name || currentUser.username || "S").charAt(0).toUpperCase();
+          userAvatarDiv.textContent = initial;
+        }
+      }
+      const logoutBtn = document.getElementById("logoutBtn");
+      if (logoutBtn) {
+        logoutBtn.addEventListener("click", () => {
+          localStorage.removeItem("currentUser");
+          window.location.href = "../index.html";
+        });
+      }
+
+      // Quick Actions content switching based on tab clicks
+      const tabLinks = document.querySelectorAll(".header-center nav a.tab-link");
+      const tabContents = document.querySelectorAll(".tab-content");
+
+      tabLinks.forEach(tab => {
+        tab.addEventListener("click", (e) => {
+          e.preventDefault();
+          const tabName = tab.getAttribute("data-tab");
+
+          // Remove active class from all tabs and add to clicked tab
+          tabLinks.forEach(t => t.classList.remove("active"));
+          tab.classList.add("active");
+
+          // Hide all tab contents
+          tabContents.forEach(content => {
+            content.style.display = "none";
+            content.classList.remove("active");
+          });
+
+          // Show the selected tab content
+          const activeContent = document.getElementById(tabName);
+          if (activeContent) {
+            activeContent.style.display = "block";
+            activeContent.classList.add("active");
+          }
+        });
+      });
+
+      // Add event listener for Start New Game button
+      const startNewGameBtn = document.getElementById("startNewGameBtn");
+      if (startNewGameBtn) {
+        startNewGameBtn.addEventListener("click", () => {
+          const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+          console.log("Current user grade:", currentUser ? currentUser.grade : "No currentUser");
+          console.log("Type of grade:", currentUser ? typeof currentUser.grade : "N/A");
+          if (currentUser && Number(currentUser.grade) === 4) {
+            window.location.href = "../Owl-s-Dream-main/index.html";
+          } else if (currentUser && (Number(currentUser.grade) === 5 || Number(currentUser.grade) === 6)) {
+            alert("Game is on going development");
+          } else {
+            alert("Game is available for Grade 4 students only.");
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
