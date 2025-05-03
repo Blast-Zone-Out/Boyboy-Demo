@@ -353,6 +353,9 @@
         }
       </style>
     </section>
+
+    <!-- Student Analytics Modal -->
+
   </main>
 
   <script>
@@ -449,9 +452,13 @@ window.addEventListener('DOMContentLoaded', () => {
         div.style.border = '1px solid #ccc';
         div.style.padding = '1rem';
         div.style.marginBottom = '1rem';
+        div.style.cursor = 'pointer';
         div.innerHTML = `
           <strong>${student.username}</strong> - Grade ${student.grade}
         `;
+        div.addEventListener('click', () => {
+          showStudentAnalytics(student);
+        });
         container.appendChild(div);
       });
     }
@@ -656,6 +663,157 @@ window.addEventListener('DOMContentLoaded', () => {
 
       reader.readAsDataURL(file);
     });
+    // Show student analytics inline below clicked student
+    function showStudentAnalytics(student, studentDiv) {
+      // Remove any existing analytics display
+      const existingAnalytics = document.querySelector('.student-analytics-inline');
+      if (existingAnalytics) {
+        existingAnalytics.remove();
+      }
+
+      // Calculate dynamic analytics based on student's final assessment attempts and answers
+      const username = student.username;
+
+      // Load modules from localStorage
+      const modules = JSON.parse(localStorage.getItem('modules') || '[]');
+
+      // Initialize total score and max score
+      let totalCorrect = 0;
+      let totalQuestions = 0;
+
+      // Iterate over all modules for student's grade
+      modules.forEach(module => {
+        if (module.grade === student.grade) {
+          const answersKey = `finalAssessmentAnswers_${username}_${module.title}`;
+          const attemptsKey = `finalAssessmentAttempts_${username}_${module.title}`;
+          const attempts = parseInt(localStorage.getItem(attemptsKey) || '0', 10);
+          const userAnswers = JSON.parse(localStorage.getItem(answersKey) || '{}');
+
+          if (module.questions && userAnswers) {
+            let correctCount = 0;
+            module.questions.forEach((q, index) => {
+              const userAnswer = userAnswers[`answer${index + 1}`];
+              if (userAnswer && userAnswer.trim().toLowerCase() === q.answer.trim().toLowerCase()) {
+                correctCount++;
+              }
+            });
+
+            // Calculate score percentage for this module
+            let scorePercent = module.questions.length > 0 ? (correctCount / module.questions.length) * 100 : 0;
+
+            // Decrease score by 2% per re-attempt beyond the first
+            if (attempts > 1) {
+              scorePercent -= (attempts - 1) * 2;
+              if (scorePercent < 0) scorePercent = 0;
+            }
+
+            totalCorrect += scorePercent;
+            totalQuestions += 100; // max score per module is 100%
+          }
+        }
+      });
+
+      // Calculate overall academic performance capped at 50%
+      // Use scorePercent from new-dashboard localStorage divided by 50%
+      let academicPerformance = 0;
+      if (currentUser && currentUser.username) {
+        const storedScore = localStorage.getItem(`finalAssessmentScore_${username}`);
+        if (storedScore) {
+          const scorePercent = parseFloat(storedScore);
+          academicPerformance = (scorePercent / 50) * 100;
+          if (academicPerformance > 100) academicPerformance = 100;
+        }
+      }
+
+      // Determine pass/fail based on passing score 8/10 (80%)
+      const passingScore = 80;
+      const passed = academicPerformance >= passingScore;
+
+      // Create analytics container
+      const analyticsDiv = document.createElement('div');
+      analyticsDiv.className = 'student-analytics-inline';
+      analyticsDiv.style.border = '1px solid #2980b9';
+      analyticsDiv.style.borderRadius = '8px';
+      analyticsDiv.style.padding = '1rem';
+      analyticsDiv.style.marginTop = '0.5rem';
+      analyticsDiv.style.backgroundColor = '#f0f8ff';
+
+      // Populate analytics content with dynamic values and close button
+      analyticsDiv.innerHTML = `
+        <h3>Student Analytics for ${username || 'Unknown Student'}</h3>
+        <button id="closeAnalyticsInlineBtn" style="float: right; background-color: #f44336; color: white; border: none; border-radius: 4px; padding: 0.25rem 0.5rem; cursor: pointer;">Close</button>
+        <div style="clear: both;"></div>
+        <div style="margin-top: 1rem;">
+        </div>
+        <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 2rem; margin-top: 1rem;">
+          <div style="width: 150px; text-align: center;">
+            <svg width="120" height="120">
+              <circle stroke="#eee" stroke-width="10" fill="transparent" r="50" cx="60" cy="60"/>
+            <circle stroke="#4caf50" stroke-width="10" fill="transparent" r="50" cx="60" cy="60" stroke-dasharray="314" stroke-dashoffset="${314 - (314 * academicPerformance / 100)}"/>
+            </svg>
+            <div>Academic Performance<br><small>${academicPerformance.toFixed(2)}%</small></div>
+          </div>
+          <div style="width: 150px; text-align: center;">
+            <svg width="120" height="120">
+              <circle stroke="#eee" stroke-width="10" fill="transparent" r="50" cx="60" cy="60"/>
+              <circle stroke="#2196f3" stroke-width="10" fill="transparent" r="50" cx="60" cy="60" stroke-dasharray="314" stroke-dashoffset="314"/>
+            </svg>
+            <div>Attendance & Participation<br><small>0%</small></div>
+          </div>
+          <div style="width: 150px; text-align: center;">
+            <svg width="120" height="120">
+              <circle stroke="#eee" stroke-width="10" fill="transparent" r="50" cx="60" cy="60"/>
+              <circle stroke="#ff9800" stroke-width="10" fill="transparent" r="50" cx="60" cy="60" stroke-dasharray="314" stroke-dashoffset="314"/>
+            </svg>
+            <div>Engagement with Materials<br><small>0%</small></div>
+          </div>
+          <div style="width: 150px; text-align: center;">
+            <svg width="120" height="120">
+              <circle stroke="#eee" stroke-width="10" fill="transparent" r="50" cx="60" cy="60"/>
+              <circle stroke="#f44336" stroke-width="10" fill="transparent" r="50" cx="60" cy="60" stroke-dasharray="314" stroke-dashoffset="314"/>
+            </svg>
+            <div>Time Spent on Tasks<br><small>0%</small></div>
+          </div>
+        </div>
+      `;
+
+      // Insert analytics after the clicked student div
+      studentDiv.insertAdjacentElement('afterend', analyticsDiv);
+
+      // Add event listener to close button
+      const closeBtn = document.getElementById('closeAnalyticsInlineBtn');
+      closeBtn.addEventListener('click', () => {
+        analyticsDiv.remove();
+      });
+    }
+
+    // Update renderStudents to pass the student div to showStudentAnalytics
+    function renderStudents(filteredStudents) {
+      const students = filteredStudents || loadStudents();
+      const container = document.getElementById('studentsListContainer');
+      container.innerHTML = '';
+
+      if (students.length === 0) {
+        container.textContent = 'No students registered yet.';
+        return;
+      }
+
+      students.forEach(student => {
+        const div = document.createElement('div');
+        div.className = 'student-item';
+        div.style.border = '1px solid #ccc';
+        div.style.padding = '1rem';
+        div.style.marginBottom = '1rem';
+        div.style.cursor = 'pointer';
+        div.innerHTML = `
+          <strong>${student.username}</strong> - Grade ${student.grade}
+        `;
+        div.addEventListener('click', () => {
+          showStudentAnalytics(student, div);
+        });
+        container.appendChild(div);
+      });
+    }
     </script>
 </body>
 </html>

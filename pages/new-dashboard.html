@@ -358,8 +358,13 @@
         assessmentScoreDiv.innerHTML = `
           <p>You scored ${correctCount} out of ${totalQuestions} questions correctly.</p>
           <p>Percentage: ${scorePercent}%</p>
-          <p>Number of attempts: ${attempts}</p>
+          <p>Number of re-attempts: ${attempts}</p>
         `;
+
+        // Save scorePercent in localStorage for teacher dashboard use
+        if (currentUser && currentUser.username) {
+          localStorage.setItem(`finalAssessmentScore_${currentUser.username}`, scorePercent);
+        }
 
         // Show the results container and hide the questions container
         assessmentResultsContainer.style.display = 'block';
@@ -381,6 +386,12 @@
         if (currentUser && currentUser.username) {
           localStorage.setItem(`finalAssessmentAnswers_${currentUser.username}`, JSON.stringify(answers));
           localStorage.setItem(`finalAssessmentCompleted_${currentUser.username}`, 'true');
+
+          // Increment final assessment attempts count
+          const attemptKey = `finalAssessmentAttempts_${currentUser.username}`;
+          let attempts = parseInt(localStorage.getItem(attemptKey) || '0', 10);
+          attempts += 1;
+          localStorage.setItem(attemptKey, attempts.toString());
         }
 
         finalAssessmentForm.reset();
