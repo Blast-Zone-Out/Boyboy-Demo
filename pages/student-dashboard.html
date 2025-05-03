@@ -179,56 +179,108 @@
         return;
       }
 
-      filteredFiles.forEach(file => {
-        const fileDiv = document.createElement('div');
-        fileDiv.className = 'file-item';
-        fileDiv.style.border = '1px solid #ccc';
-        fileDiv.style.padding = '0.5rem';
-        fileDiv.style.marginBottom = '1rem';
+        filteredFiles.forEach(file => {
+          const fileDiv = document.createElement('div');
+          fileDiv.className = 'file-item';
+          fileDiv.style.border = '1px solid #ccc';
+          fileDiv.style.padding = '0.5rem';
+          fileDiv.style.marginBottom = '1rem';
 
-        const title = document.createElement('h3');
-        title.textContent = `${file.name} (Quarter ${file.quarter})`;
-        fileDiv.appendChild(title);
+          const title = document.createElement('h3');
+          title.textContent = `${file.name} (Quarter ${file.quarter})`;
+          fileDiv.appendChild(title);
 
-        if (file.url.endsWith('.pdf')) {
-          const embed = document.createElement('embed');
-          embed.src = file.url;
-          embed.type = 'application/pdf';
-          embed.style.width = '100%';
-          embed.style.height = '400px';
-          fileDiv.appendChild(embed);
-        } else if (file.url.endsWith('.docx')) {
-          const iframe = document.createElement('iframe');
-          iframe.src = `https://docs.google.com/gview?url=${encodeURIComponent(window.location.origin + '/' + file.url)}&embedded=true`;
-          iframe.width = '100%';
-          iframe.height = '400px';
-          iframe.frameBorder = '0';
-          fileDiv.appendChild(iframe);
-        } else {
-          const link = document.createElement('a');
-          link.href = file.url;
-          const viewModuleBtn = document.createElement('button');
-          viewModuleBtn.textContent = 'View Module';
-          viewModuleBtn.style.cursor = 'pointer';
-          viewModuleBtn.style.padding = '0.5rem 1rem';
-          viewModuleBtn.style.fontWeight = 'bold';
-          viewModuleBtn.addEventListener('click', () => {
-            window.open(file.url, '_blank');
-          });
-          fileDiv.appendChild(viewModuleBtn);
+          if (file.url.endsWith('.pdf')) {
+            const embed = document.createElement('embed');
+            embed.src = file.url;
+            embed.type = 'application/pdf';
+            embed.style.width = '100%';
+            embed.style.height = '400px';
+            fileDiv.appendChild(embed);
+          } else if (file.url.endsWith('.docx')) {
+            const iframe = document.createElement('iframe');
+            iframe.src = `https://docs.google.com/gview?url=${encodeURIComponent(window.location.origin + '/' + file.url)}&embedded=true`;
+            iframe.width = '100%';
+            iframe.height = '400px';
+            iframe.frameBorder = '0';
+            fileDiv.appendChild(iframe);
+          } else {
+            const link = document.createElement('a');
+            link.href = file.url;
+            const viewModuleBtn = document.createElement('button');
+            viewModuleBtn.textContent = 'View Module';
+            viewModuleBtn.style.cursor = 'pointer';
+            viewModuleBtn.style.padding = '0.5rem 1rem';
+            viewModuleBtn.style.fontWeight = 'bold';
 
-          // Add "Let's play" button next to "View Module"
-          const playButton = document.createElement('button');
-          playButton.textContent = "Let's play";
-          playButton.style.cursor = 'pointer';
-          playButton.style.padding = '0.5rem 1rem';
-          playButton.style.fontWeight = 'bold';
-          playButton.style.marginLeft = '0.5rem';
-playButton.addEventListener('click', () => {
-  window.location.href = '../Owl-s-Dream-main/index.html';
-});
-          fileDiv.appendChild(playButton);
-        }
+            // Initially disable the "Let's play" button
+            const playButton = document.createElement('button');
+            playButton.textContent = "Let's play";
+            playButton.style.cursor = 'pointer';
+            playButton.style.padding = '0.5rem 1rem';
+            playButton.style.fontWeight = 'bold';
+            playButton.style.marginLeft = '0.5rem';
+            playButton.disabled = true;
+            playButton.style.backgroundColor = '#ccc'; // grey color when disabled
+            playButton.style.color = '#666'; // darker grey text when disabled
+            playButton.style.transition = 'none'; // disable transition when disabled
+            playButton.addEventListener('mouseover', () => {
+              if (playButton.disabled) {
+                playButton.style.backgroundColor = '#ccc';
+                playButton.style.color = '#666';
+                playButton.style.cursor = 'not-allowed';
+              }
+            });
+            playButton.addEventListener('mouseout', () => {
+              if (playButton.disabled) {
+                playButton.style.backgroundColor = '#ccc';
+                playButton.style.color = '#666';
+                playButton.style.cursor = 'not-allowed';
+              }
+            });
+
+            // Enable "Let's play" button only after "View Module" is clicked
+            viewModuleBtn.addEventListener('click', () => {
+              window.open(file.url, '_blank');
+              playButton.disabled = false;
+              playButton.style.backgroundColor = ''; // reset to default background color
+              playButton.style.color = ''; // reset to default text color
+              playButton.style.transition = ''; // enable transition when enabled
+              playButton.style.cursor = 'pointer';
+              playButton.removeEventListener('mouseover', () => {});
+              playButton.removeEventListener('mouseout', () => {});
+
+              // Persist the enabled state in localStorage
+              const viewedModulesKey = `viewedModules_${currentUser.username}`;
+              let viewedModules = JSON.parse(localStorage.getItem(viewedModulesKey)) || {};
+              viewedModules[file.name] = true;
+              localStorage.setItem(viewedModulesKey, JSON.stringify(viewedModules));
+            });
+
+            // On page load, check if this module was viewed before and enable the play button
+            const viewedModulesKey = `viewedModules_${currentUser.username}`;
+            let viewedModules = JSON.parse(localStorage.getItem(viewedModulesKey)) || {};
+            if (viewedModules[file.name]) {
+              playButton.disabled = false;
+              playButton.style.backgroundColor = ''; // reset to default background color
+              playButton.style.color = ''; // reset to default text color
+              playButton.style.transition = ''; // enable transition when enabled
+              playButton.style.cursor = 'pointer';
+              playButton.removeEventListener('mouseover', () => {});
+              playButton.removeEventListener('mouseout', () => {});
+            }
+
+            playButton.addEventListener('click', () => {
+              if (playButton.disabled) {
+                alert('Read first the module before playing the game');
+              } else {
+                window.location.href = '../Owl-s-Dream-main/index.html';
+              }
+            });
+
+            fileDiv.appendChild(viewModuleBtn);
+            fileDiv.appendChild(playButton);
+          }
 
         finalAssessmentsContainer.appendChild(fileDiv);
       });
