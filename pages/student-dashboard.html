@@ -240,22 +240,29 @@
             });
 
             // Enable "Let's play" button only after "View Module" is clicked
-            viewModuleBtn.addEventListener('click', () => {
-              window.open(file.url, '_blank');
-              playButton.disabled = false;
-              playButton.style.backgroundColor = ''; // reset to default background color
-              playButton.style.color = ''; // reset to default text color
-              playButton.style.transition = ''; // enable transition when enabled
-              playButton.style.cursor = 'pointer';
-              playButton.removeEventListener('mouseover', () => {});
-              playButton.removeEventListener('mouseout', () => {});
+viewModuleBtn.addEventListener('click', () => {
+  // Create a temporary link to download the file
+  const link = document.createElement('a');
+  link.href = file.url;
+  link.download = file.name ? file.name.replace(/\s+/g, '_') + (file.url.endsWith('.pdf') ? '.pdf' : '') : 'final_assessment.pdf';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 
-              // Persist the enabled state in localStorage
-              const viewedModulesKey = `viewedModules_${currentUser.username}`;
-              let viewedModules = JSON.parse(localStorage.getItem(viewedModulesKey)) || {};
-              viewedModules[file.name] = true;
-              localStorage.setItem(viewedModulesKey, JSON.stringify(viewedModules));
-            });
+  playButton.disabled = false;
+  playButton.style.backgroundColor = ''; // reset to default background color
+  playButton.style.color = ''; // reset to default text color
+  playButton.style.transition = ''; // enable transition when enabled
+  playButton.style.cursor = 'pointer';
+  playButton.removeEventListener('mouseover', () => {});
+  playButton.removeEventListener('mouseout', () => {});
+
+  // Persist the enabled state in localStorage
+  const viewedModulesKey = `viewedModules_${currentUser.username}`;
+  let viewedModules = JSON.parse(localStorage.getItem(viewedModulesKey)) || {};
+  viewedModules[file.name] = true;
+  localStorage.setItem(viewedModulesKey, JSON.stringify(viewedModules));
+});
 
             // On page load, check if this module was viewed before and enable the play button
             const viewedModulesKey = `viewedModules_${currentUser.username}`;
