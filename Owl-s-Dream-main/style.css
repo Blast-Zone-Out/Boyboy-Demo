@@ -113,4 +113,41 @@
     border-radius: 12px;
  
   }
+  #leaderboard-list li {
+    list-style: none;
+  }
+  
+  
+  .tutorial-prompt, .tutorial-box {
+    color: #1d1b1b;
+    position: fixed;
+    bottom: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    padding: 1.5em;
+    border: 2px solid #007bff;
+    border-radius: 10px;
+    z-index: 999;
+    text-align: center;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  }
+  .tutorial-prompt button, .tutorial-box button {
+    margin: 10px;
+  }
+  .fade-out {
+    animation: fadeOut 0.5s ease-out forwards;
+  }
+  
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+      transform: scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: scale(0.95);
+      display: none;
+    }
+  }
   
