@@ -214,7 +214,7 @@ document.addEventListener("DOMContentLoaded", () => {
     backButton.addEventListener("click", () => {
       const currentUser = JSON.parse(localStorage.getItem("currentUser"));
       if (currentUser && currentUser.role === "student") {
-        window.location.href = "../pages/student-dashboard.html";
+        window.location.href = "../pages/new-dashboard.html";
       } else {
         leaderboardContainer.classList.add("hidden");
         gameContainer.classList.remove("hidden");

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Module Reader</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    header {
+      background-color: #2980b9;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.5rem;
+    }
+    main {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+    }
+    embed {
+      width: 100%;
+      height: 80vh;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    footer {
+      padding: 1rem;
+      text-align: center;
+      background-color: #f4f4f4;
+    }
+    button {
+      background-color: #1abc9c;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #16a085;
+    }
+  </style>
+</head>
+<body>
+  <header>Read this module before playing the game</header>
+  <main>
+    <embed src="../ilide.info-math-grade-4-quarter-1-module-1-final-pr_e19150085295895187c4ca6ed92fb567.pdf" type="application/pdf" />
+  </main>
+  <footer>
+    <button id="markReadBtn">Mark as Read</button>
+  </footer>
+
+  <script>
+    document.getElementById('markReadBtn').addEventListener('click', () => {
+      // Mark the module as read in localStorage for the current user
+      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+      if (!currentUser) {
+        alert('User not logged in.');
+        return;
+      }
+      const key = `moduleRead_${currentUser.username || currentUser.name || 'default'}`;
+      localStorage.setItem(key, 'true');
+      alert('Module marked as read. You will be redirected to the game.');
+      // Redirect to the game page
+      window.location.href = "../Owl-s-Dream-main/index.html";
+    });
+  </script>
+</body>
+</html>

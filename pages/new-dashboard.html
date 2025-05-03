@@ -309,11 +309,30 @@
       if (startNewGameBtn) {
         startNewGameBtn.addEventListener("click", () => {
           const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-          console.log("Current user grade:", currentUser ? currentUser.grade : "No currentUser");
-          console.log("Type of grade:", currentUser ? typeof currentUser.grade : "N/A");
-          if (currentUser && Number(currentUser.grade) === 4) {
-            window.location.href = "../Owl-s-Dream-main/index.html";
-          } else if (currentUser && (Number(currentUser.grade) === 5 || Number(currentUser.grade) === 6)) {
+          if (!currentUser) {
+            alert("User not logged in.");
+            return;
+          }
+          const key = `moduleRead_${currentUser.username || currentUser.name || 'default'}`;
+          const hasReadModule = localStorage.getItem(key) === 'true';
+
+          if (Number(currentUser.grade) === 4) {
+            if (!hasReadModule) {
+              // Redirect to PDF reader page to read the module
+              window.location.href = "pdf-reader.html";
+            } else {
+              // Ask if user wants to read again
+              const readAgain = confirm("Do you want to read again this module?");
+              if (readAgain) {
+                // Reset read status and redirect to PDF reader
+                localStorage.removeItem(key);
+                window.location.href = "pdf-reader.html";
+              } else {
+                // Proceed to game
+                window.location.href = "../Owl-s-Dream-main/index.html";
+              }
+            }
+          } else if (Number(currentUser.grade) === 5 || Number(currentUser.grade) === 6) {
             alert("Game is on going development");
           } else {
             alert("Game is available for Grade 4 students only.");
