@@ -16,6 +16,9 @@ header {
   padding: 0 2rem;
   height: 60px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
 .header-left, .header-center, .header-right {
@@ -94,6 +97,7 @@ main {
   max-width: 1200px;
   margin: 2rem auto;
   padding: 0 1rem;
+  padding-top: 60px;
 }
 
 main h1 {

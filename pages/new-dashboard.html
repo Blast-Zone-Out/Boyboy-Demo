@@ -242,21 +242,34 @@
     <section id="final-assessment" class="tab-content" aria-label="Final Assessment" style="display:none;">
       <h1>Final Assessment</h1>
       <div class="quick-actions">
-        <div class="quick-action-btn" role="button" tabindex="0" aria-label="Start Final Assessment">
-          <div class="icon">📝</div>
-          <div>Start Final Assessment</div>
+        <div class="quick-action-btn" role="button" tabindex="0" aria-label="View Module">
+          <div class="icon">📚</div>
+          <div>View Module</div>
+        </div>
+        <div class="quick-action-btn" role="button" tabindex="0" aria-label="Take Final Assessment" id="takeFinalAssessmentBtn">
+          <div class="icon">✍️</div>
+          <div>Take Final Assessment</div>
         </div>
         <div class="quick-action-btn" role="button" tabindex="0" aria-label="View Assessment Results">
           <div class="icon">📈</div>
           <div>View Assessment Results</div>
         </div>
       </div>
+      <div id="finalAssessmentQuestionsContainer" style="margin-top: 1rem; display: none; max-height: 500px; overflow-y: auto; border: 1px solid #2980b9; border-radius: 8px; padding: 1rem; background: #f9fbff;">
+        <h3>Final Assessment Questions</h3>
+        <form id="finalAssessmentForm">
+          <div id="questionsList"></div>
+          <button type="submit" style="margin-top: 1rem; padding: 0.5rem 1rem; font-weight: 700; background: #1abc9c; color: white; border: none; border-radius: 6px; cursor: pointer;">Submit Answers</button>
+        </form>
+        <div id="finalAssessmentMessage" style="margin-top: 1rem; font-weight: 600;"></div>
+      </div>
     </section>
    
-  </main>
+      </main>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+
       if (currentUser && currentUser.role === "student") {
         const usernameDiv = document.getElementById("username");
         if (usernameDiv) {
@@ -274,6 +287,93 @@
           localStorage.removeItem("currentUser");
           window.location.href = "../index.html";
         });
+      }
+
+      // Take Final Assessment button functionality
+      const takeFinalAssessmentBtn = document.getElementById('takeFinalAssessmentBtn');
+      const finalAssessmentQuestionsContainer = document.getElementById('finalAssessmentQuestionsContainer');
+      const questionsList = document.getElementById('questionsList');
+      const finalAssessmentForm = document.getElementById('finalAssessmentForm');
+      const finalAssessmentMessage = document.getElementById('finalAssessmentMessage');
+
+      takeFinalAssessmentBtn.addEventListener('click', () => {
+        // Show the questions container
+        finalAssessmentQuestionsContainer.style.display = 'block';
+        finalAssessmentMessage.textContent = '';
+        questionsList.innerHTML = '';
+
+        // Load modules from localStorage
+        const modules = JSON.parse(localStorage.getItem('modules') || '[]');
+
+        // Get current user grade
+        const userGrade = currentUser && currentUser.grade ? currentUser.grade.toString() : null;
+
+        // Filter modules by user grade
+        const filteredModules = userGrade ? modules.filter(m => m.grade === userGrade) : modules;
+
+        if (filteredModules.length === 0) {
+          questionsList.innerHTML = '<p>No final assessment modules available for your grade.</p>';
+          return;
+        }
+
+        // For simplicity, take the first module for assessment
+        const module = filteredModules[0];
+
+        // Display module title
+        const moduleTitle = document.createElement('h4');
+        moduleTitle.textContent = `Module: ${module.title}`;
+        questionsList.appendChild(moduleTitle);
+
+        // Display questions with input fields for answers
+        module.questions.forEach((q, index) => {
+          const questionDiv = document.createElement('div');
+          questionDiv.style.marginBottom = '1rem';
+
+          const questionLabel = document.createElement('label');
+          questionLabel.textContent = `Q${index + 1}: ${q.question}`;
+          questionLabel.setAttribute('for', `answer${index + 1}`);
+
+          const answerInput = document.createElement('input');
+          answerInput.type = 'text';
+          answerInput.id = `answer${index + 1}`;
+          answerInput.name = `answer${index + 1}`;
+          answerInput.style.width = '100%';
+          answerInput.style.padding = '0.5rem';
+          answerInput.style.marginTop = '0.25rem';
+          answerInput.required = true;
+
+          questionDiv.appendChild(questionLabel);
+          questionDiv.appendChild(answerInput);
+          questionsList.appendChild(questionDiv);
+        });
+      });
+
+      // Handle final assessment form submission
+      finalAssessmentForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        finalAssessmentMessage.style.color = 'green';
+        finalAssessmentMessage.textContent = 'Your answers have been submitted. Thank you!';
+        finalAssessmentForm.reset();
+        // Hide the questions container
+        finalAssessmentQuestionsContainer.style.display = 'none';
+        // Disable the Take Final Assessment button
+        takeFinalAssessmentBtn.disabled = true;
+        takeFinalAssessmentBtn.style.opacity = '0.6';
+        takeFinalAssessmentBtn.style.cursor = 'not-allowed';
+        // Store completion flag in localStorage
+        if (currentUser && currentUser.username) {
+          localStorage.setItem(`finalAssessmentCompleted_${currentUser.username}`, 'true');
+        }
+      });
+
+      // On page load, disable Take Final Assessment button if already completed
+      if (currentUser && currentUser.username) {
+        const completed = localStorage.getItem(`finalAssessmentCompleted_${currentUser.username}`) === 'true';
+        if (completed) {
+          takeFinalAssessmentBtn.disabled = true;
+          takeFinalAssessmentBtn.style.opacity = '0.6';
+          takeFinalAssessmentBtn.style.cursor = 'not-allowed';
+        }
       }
 
       // Quick Actions content switching based on tab clicks
@@ -339,6 +439,132 @@
           }
         });
       }
+
+      // Add event listener for View Module button
+      const viewModuleBtn = document.querySelector('[aria-label="View Module"]');
+      const modulesContainer = document.createElement('div');
+      modulesContainer.id = 'modulesContainer';
+      modulesContainer.style.marginTop = '1rem';
+      modulesContainer.style.maxHeight = '400px';
+      modulesContainer.style.overflowY = 'auto';
+      modulesContainer.style.border = '1px solid #2980b9';
+      modulesContainer.style.borderRadius = '8px';
+      modulesContainer.style.padding = '1rem';
+      modulesContainer.style.background = '#f9fbff';
+      modulesContainer.style.display = 'none';
+
+      const finalAssessmentSection = document.getElementById('final-assessment');
+      finalAssessmentSection.appendChild(modulesContainer);
+
+      const modulesList = document.createElement('div');
+      modulesList.id = 'modulesList';
+      modulesContainer.appendChild(modulesList);
+
+      const finalAssessmentFilesList = document.createElement('div');
+      finalAssessmentFilesList.id = 'finalAssessmentFilesList';
+      modulesContainer.appendChild(finalAssessmentFilesList);
+
+      viewModuleBtn.addEventListener('click', () => {
+        if (modulesContainer.style.display === 'none' || modulesContainer.style.display === '') {
+          modulesContainer.style.display = 'block';
+
+          // Load modules and final assessment files from localStorage
+          const modules = JSON.parse(localStorage.getItem('modules') || '[]');
+          const finalAssessmentFiles = JSON.parse(localStorage.getItem('finalAssessmentFiles') || '[]');
+
+          // Get current user grade
+          const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+          const userGrade = currentUser && currentUser.grade ? currentUser.grade.toString() : null;
+
+          // Filter modules and files by user grade
+          const filteredModules = userGrade ? modules.filter(m => m.grade === userGrade) : modules;
+          const filteredFinalAssessmentFiles = userGrade ? finalAssessmentFiles.filter(f => f.grade === userGrade) : finalAssessmentFiles;
+
+          // Render modules
+          if (filteredModules.length === 0) {
+            modulesList.innerHTML = '<p>No modules uploaded yet for your grade.</p>';
+          } else {
+            modulesList.innerHTML = '<h3>Modules Uploaded by Teacher</h3>';
+            filteredModules.forEach(module => {
+              const moduleDiv = document.createElement('div');
+              moduleDiv.style.border = '1px solid #ccc';
+              moduleDiv.style.padding = '0.5rem';
+              moduleDiv.style.marginBottom = '0.5rem';
+              moduleDiv.innerHTML = `
+                <strong>Title:</strong> ${module.title}<br/>
+                <strong>Description:</strong> ${module.description}<br/>
+                <strong>Grade:</strong> ${module.grade}<br/>
+                <button class="downloadModuleBtn" data-file="${encodeURIComponent(module.fileData)}" data-filename="${module.title}.pdf">Download Module File</button>
+              `;
+              modulesList.appendChild(moduleDiv);
+            });
+            // Add event listeners for download buttons
+            modulesList.querySelectorAll('.downloadModuleBtn').forEach(btn => {
+              btn.addEventListener('click', () => {
+                const fileData = decodeURIComponent(btn.getAttribute('data-file'));
+                const filename = btn.getAttribute('data-filename');
+                // Convert base64 to Blob
+                const byteString = atob(fileData.split(',')[1]);
+                const mimeString = fileData.split(',')[0].split(':')[1].split(';')[0];
+                const ab = new ArrayBuffer(byteString.length);
+                const ia = new Uint8Array(ab);
+                for (let i = 0; i < byteString.length; i++) {
+                  ia[i] = byteString.charCodeAt(i);
+                }
+                const blob = new Blob([ab], { type: mimeString });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => {
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                }, 0);
+              });
+            });
+          }
+
+          // Render final assessment files
+          if (filteredFinalAssessmentFiles.length === 0) {
+            finalAssessmentFilesList.innerHTML = '';
+          } else {
+            finalAssessmentFilesList.innerHTML = '<h3>Final Assessment Files</h3>';
+            filteredFinalAssessmentFiles.forEach(file => {
+              const fileDiv = document.createElement('div');
+              fileDiv.style.border = '1px solid #ccc';
+              fileDiv.style.padding = '0.5rem';
+              fileDiv.style.marginBottom = '0.5rem';
+              fileDiv.innerHTML = `
+                <strong>Name:</strong> ${file.name}<br/>
+                <strong>Grade:</strong> ${file.grade}<br/>
+                <strong>Quarter:</strong> ${file.quarter}<br/>
+                <button class="downloadFinalAssessmentBtn" data-url="${file.url}" data-filename="${file.name}">Download File</button>
+              `;
+              finalAssessmentFilesList.appendChild(fileDiv);
+            });
+            // Add event listeners for final assessment download buttons
+            finalAssessmentFilesList.querySelectorAll('.downloadFinalAssessmentBtn').forEach(btn => {
+              btn.addEventListener('click', () => {
+                const url = btn.getAttribute('data-url');
+                const filename = btn.getAttribute('data-filename');
+                // Create a temporary link to download
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => {
+                  document.body.removeChild(a);
+                }, 0);
+              });
+            });
+          }
+        } else {
+          modulesContainer.style.display = 'none';
+        }
+      });
     });
   </script>
 </body>

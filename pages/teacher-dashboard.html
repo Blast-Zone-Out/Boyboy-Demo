@@ -119,7 +119,7 @@
   <a href="teacher-dashboard.html" class="tab-link active" data-tab="dashboard">Dashboard</a>
   <a href="#" class="tab-link" data-tab="add-student">Add Student</a>
   <a href="#" class="tab-link" data-tab="student-list">Student List</a>
-  <a href="#" class="tab-link" data-tab="add-module">Add Module</a>
+  <a href="#" class="tab-link" data-tab="add-module">Add Final Assesment Module</a>
 </nav>
   </div>
     <div class="header-right">
@@ -156,13 +156,13 @@
           </div>
         </div>
       </div>
-<section class="panel quick-actions" aria-label="Quick Actions">
-  <h2>Quick Actions</h2>
-  <a href="final-assessment.html" class="quick-action-btn" role="button" tabindex="0" aria-label="Add Final Assessment Module" style="text-decoration:none; color:inherit; margin-top: 1rem;">
-    <div class="icon">📕</div>
-    <div>Add Final Assessment Module</div>
-  </a>
-</section>
+      <section class="panel quick-actions" aria-label="Quick Actions">
+        <h2>Quick Actions</h2>
+        <div class="quick-action-btn" role="button" tabindex="0" aria-label="View Student Analytics" id="viewStudentAnalyticsBtn">
+          <div class="icon">📊</div>
+          <div>View Student Analytics</div>
+        </div>
+      </section>
     </section>
     <section id="add-student" class="tab-content" aria-label="Add Student">
       <div class="container">
@@ -210,9 +210,72 @@
           </select>
           <label for="moduleFile">Upload Module File (PDF, DOCX, PPT):</label>
           <input type="file" id="moduleFile" name="moduleFile" accept=".pdf,.docx,.ppt,.pptx" required />
+          <label>Enter 10 Questions and Answers:</label>
+          <div id="questionsContainer" style="max-height: 300px; overflow-y: auto; border: 2px solid #2980b9; border-radius: 8px; padding: 0.5rem;">
+            <div style="margin-bottom: 1rem;">
+              <label for="question1">Question 1:</label>
+              <input type="text" id="question1" name="question1" placeholder="Enter question 1" required style="width: 100%; padding: 0.5rem; margin-bottom: 0.25rem; border: 1px solid #2980b9; border-radius: 4px;" />
+              <label for="answer1">Answer 1:</label>
+              <input type="text" id="answer1" name="answer1" placeholder="Enter answer 1" required style="width: 100%; padding: 0.5rem; border: 1px solid #2980b9; border-radius: 4px;" />
+            </div>
+            <div style="margin-bottom: 1rem;">
+              <label for="question2">Question 2:</label>
+              <input type="text" id="question2" name="question2" placeholder="Enter question 2" required style="width: 100%; padding: 0.5rem; margin-bottom: 0.25rem; border: 1px solid #2980b9; border-radius: 4px;" />
+              <label for="answer2">Answer 2:</label>
+              <input type="text" id="answer2" name="answer2" placeholder="Enter answer 2" required style="width: 100%; padding: 0.5rem; border: 1px solid #2980b9; border-radius: 4px;" />
+            </div>
+            <div style="margin-bottom: 1rem;">
+              <label for="question3">Question 3:</label>
+              <input type="text" id="question3" name="question3" placeholder="Enter question 3" required style="width: 100%; padding: 0.5rem; margin-bottom: 0.25rem; border: 1px solid #2980b9; border-radius: 4px;" />
+              <label for="answer3">Answer 3:</label>
+              <input type="text" id="answer3" name="answer3" placeholder="Enter answer 3" required style="width: 100%; padding: 0.5rem; border: 1px solid #2980b9; border-radius: 4px;" />
+            </div>
+            <div style="margin-bottom: 1rem;">
+              <label for="question4">Question 4:</label>
+              <input type="text" id="question4" name="question4" placeholder="Enter question 4" required style="width: 100%; padding: 0.5rem; margin-bottom: 0.25rem; border: 1px solid #2980b9; border-radius: 4px;" />
+              <label for="answer4">Answer 4:</label>
+              <input type="text" id="answer4" name="answer4" placeholder="Enter answer 4" required style="width: 100%; padding: 0.5rem; border: 1px solid #2980b9; border-radius: 4px;" />
+            </div>
+            <div style="margin-bottom: 1rem;">
+              <label for="question5">Question 5:</label>
+              <input type="text" id="question5" name="question5" placeholder="Enter question 5" required style="width: 100%; padding: 0.5rem; margin-bottom: 0.25rem; border: 1px solid #2980b9; border-radius: 4px;" />
+              <label for="answer5">Answer 5:</label>
+              <input type="text" id="answer5" name="answer5" placeholder="Enter answer 5" required style="width: 100%; padding: 0.5rem; border: 1px solid #2980b9; border-radius: 4px;" />
+            </div>
+            <div style="margin-bottom: 1rem;">
+              <label for="question6">Question 6:</label>
+              <input type="text" id="question6" name="question6" placeholder="Enter question 6" required style="width: 100%; padding: 0.5rem; margin-bottom: 0.25rem; border: 1px solid #2980b9; border-radius: 4px;" />
+              <label for="answer6">Answer 6:</label>
+              <input type="text" id="answer6" name="answer6" placeholder="Enter answer 6" required style="width: 100%; padding: 0.5rem; border: 1px solid #2980b9; border-radius: 4px;" />
+            </div>
+            <div style="margin-bottom: 1rem;">
+              <label for="question7">Question 7:</label>
+              <input type="text" id="question7" name="question7" placeholder="Enter question 7" required style="width: 100%; padding: 0.5rem; margin-bottom: 0.25rem; border: 1px solid #2980b9; border-radius: 4px;" />
+              <label for="answer7">Answer 7:</label>
+              <input type="text" id="answer7" name="answer7" placeholder="Enter answer 7" required style="width: 100%; padding: 0.5rem; border: 1px solid #2980b9; border-radius: 4px;" />
+            </div>
+            <div style="margin-bottom: 1rem;">
+              <label for="question8">Question 8:</label>
+              <input type="text" id="question8" name="question8" placeholder="Enter question 8" required style="width: 100%; padding: 0.5rem; margin-bottom: 0.25rem; border: 1px solid #2980b9; border-radius: 4px;" />
+              <label for="answer8">Answer 8:</label>
+              <input type="text" id="answer8" name="answer8" placeholder="Enter answer 8" required style="width: 100%; padding: 0.5rem; border: 1px solid #2980b9; border-radius: 4px;" />
+            </div>
+            <div style="margin-bottom: 1rem;">
+              <label for="question9">Question 9:</label>
+              <input type="text" id="question9" name="question9" placeholder="Enter question 9" required style="width: 100%; padding: 0.5rem; margin-bottom: 0.25rem; border: 1px solid #2980b9; border-radius: 4px;" />
+              <label for="answer9">Answer 9:</label>
+              <input type="text" id="answer9" name="answer9" placeholder="Enter answer 9" required style="width: 100%; padding: 0.5rem; border: 1px solid #2980b9; border-radius: 4px;" />
+            </div>
+            <div style="margin-bottom: 1rem;">
+              <label for="question10">Question 10:</label>
+              <input type="text" id="question10" name="question10" placeholder="Enter question 10" required style="width: 100%; padding: 0.5rem; margin-bottom: 0.25rem; border: 1px solid #2980b9; border-radius: 4px;" />
+              <label for="answer10">Answer 10:</label>
+              <input type="text" id="answer10" name="answer10" placeholder="Enter answer 10" required style="width: 100%; padding: 0.5rem; border: 1px solid #2980b9; border-radius: 4px;" />
+            </div>
+         
           <button type="submit" class="acceptBtn">Upload Module</button>
         </form>
-        <div id="uploadMessage"></div>
+      <div id="uploadMessage" style="margin-top: 1rem; padding: 0.75rem 1rem; border-radius: 6px; font-weight: 600;"></div>
       </div>
       <style>
         #add-module .container {
@@ -516,6 +579,15 @@ window.addEventListener('DOMContentLoaded', () => {
     // Upload module form submission
     const uploadModuleForm = document.getElementById('uploadModuleForm');
     const uploadMessage = document.getElementById('uploadMessage');
+
+    // Clear upload message on page load
+    uploadMessage.textContent = '';
+
+    // Clear upload message on form reset
+    uploadModuleForm.addEventListener('reset', () => {
+      uploadMessage.textContent = '';
+    });
+
     uploadModuleForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const title = document.getElementById('moduleTitle').value.trim();
@@ -523,6 +595,26 @@ window.addEventListener('DOMContentLoaded', () => {
       const grade = document.getElementById('moduleGrade').value;
       const fileInput = document.getElementById('moduleFile');
       const file = fileInput.files[0];
+
+      // Collect questions and answers
+      let questions = [];
+      for (let i = 1; i <= 10; i++) {
+        const questionElem = document.getElementById(`question${i}`);
+        const answerElem = document.getElementById(`answer${i}`);
+        if (!questionElem || !answerElem) {
+          uploadMessage.style.color = 'red';
+          uploadMessage.textContent = `Question or answer input ${i} not found. Please refresh the page.`;
+          return;
+        }
+        const question = questionElem.value.trim();
+        const answer = answerElem.value.trim();
+        if (!question || !answer) {
+          uploadMessage.style.color = 'red';
+          uploadMessage.textContent = `Please fill both question and answer for item ${i}.`;
+          return;
+        }
+        questions.push({ question, answer });
+      }
 
       if (!title || !description || !grade || !file) {
         uploadMessage.style.color = 'red';
@@ -545,21 +637,25 @@ window.addEventListener('DOMContentLoaded', () => {
           description,
           grade,
           fileData: fileData,
-          fileType: file.type
+          fileType: file.type,
+          questions: questions
         };
 
         modules.push(newModule);
         localStorage.setItem('modules', JSON.stringify(modules));
 
-        uploadMessage.style.color = 'green';
-        uploadMessage.textContent = 'Module uploaded successfully.';
-        uploadModuleForm.reset();
-        renderModules();
-        updateTotalModulesCount();
-      };
+          uploadMessage.style.color = 'green';
+          uploadMessage.textContent = 'Module uploaded successfully.';
+          setTimeout(() => {
+            uploadMessage.textContent = '';
+          }, 5000);
+          uploadModuleForm.reset();
+          renderModules();
+          updateTotalModulesCount();
+        };
 
       reader.readAsDataURL(file);
     });
-  </script>
+    </script>
 </body>
 </html>
