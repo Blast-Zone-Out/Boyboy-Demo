@@ -47,7 +47,7 @@ body {
   }
 }
 
-@media (min-width: 481px) and (max-width: 1024px) {
+@media (min-width: 481px) and (max-width: 768px) {
   .logo {
     width: 85px;
     height: 85px;
@@ -59,6 +59,21 @@ body {
   }
   h1 {
     font-size: 2.2rem;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .logo {
+    width: 95px;
+    height: 95px;
+    margin-bottom: 1.75rem;
+  }
+  .container {
+    padding: 3rem 3.5rem;
+    max-width: 850px;
+  }
+  h1 {
+    font-size: 2.4rem;
   }
 }
 
@@ -278,5 +293,3 @@ section:hover {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
-
-

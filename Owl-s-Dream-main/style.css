@@ -56,7 +56,7 @@
   }
   
   button:hover, .btn:hover {
-    background: #ff4757;
+    background: #f71b2d;
   }
   
   #answer-buttons {
@@ -92,12 +92,25 @@
   }
   
   .wrong {
-    color: rgb(248, 91, 91);
+    color: rgb(255, 5, 5);
   }
   
-  #intro-screen {
-    background: none;
-    text-align: center;
-    animation: fadeIn 1s ease-in;
+  #floating-greeting {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 200px;
+    height: auto;
+    z-index: 999;
+    transition: opacity 0.5s ease;
+
+  }
+  
+  
+  #floating-greeting img {
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+ 
   }
   

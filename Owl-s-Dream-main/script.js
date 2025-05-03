@@ -325,24 +325,52 @@ function showAnswerSummary() {
   resultScreen.appendChild(summaryContainer);
 }
 
+const backToDashboardBtn = document.getElementById("backToDashboardBtn");
+function redirectToDashboard() {
+  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+  if (!currentUser || !currentUser.role) {
+    window.location.href = "../index.html";
+    return;
+  }
+  switch (currentUser.role) {
+    case "student":
+      window.location.href = "../pages/student-dashboard.html";
+      break;
+    case "teacher":
+      window.location.href = "../pages/teacher-dashboard.html";
+      break;
+    case "admin":
+      window.location.href = "../pages/admin-dashboard.html";
+      break;
+    default:
+      window.location.href = "../index.html";
+  }
+}
+if (backToDashboardBtn) {
+  backToDashboardBtn.addEventListener("click", redirectToDashboard);
+}
+
+const fixedBackToDashboardBtn = document.getElementById("fixedBackToDashboardBtn");
+if (fixedBackToDashboardBtn) {
+  fixedBackToDashboardBtn.addEventListener("click", redirectToDashboard);
+}
+
 //For Animations icon
-const introScreen = document.getElementById("intro-screen");
 const introImage = document.getElementById("intro-image");
+const floatingGreeting = document.getElementById("floating-greeting");
 
-// Hide all screens initially except intro
-startScreen.classList.add("hidden");
-difficultyScreen.classList.add("hidden");
-quizContainer.classList.add("hidden");
-resultScreen.classList.add("hidden");
-
-// Show start_instruction after 5 seconds, then the start screen
+// Switch to second image after 5 seconds
 setTimeout(() => {
   introImage.src = "./assets/start_instruction.png";
-  
-  // Then show start screen after another 5 seconds
-  setTimeout(() => {
-    introScreen.classList.add("hidden");
-    startScreen.classList.remove("hidden");
-  }, 5000);
 
+  // Hide the whole container after another 3 seconds
+  setTimeout(() => {
+    floatingGreeting.style.transition = "opacity 0.5s ease";
+    floatingGreeting.style.opacity = "0";
+
+    // Remove it from DOM completely
+    setTimeout(() => {
+      floatingGreeting.remove();
+    }, 500); // wait for fade out
+  }, 3000);
 }, 5000);
