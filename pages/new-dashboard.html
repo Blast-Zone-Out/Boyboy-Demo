@@ -606,62 +606,102 @@
       // Add event listener for Start New Game button
       const startNewGameBtn = document.getElementById("startNewGameBtn");
       if (startNewGameBtn) {
+        // Create video modal HTML
+        const videoModalHTML = `
+          <div id="videoModal" style="display:none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; flex-direction: column;">
+            <div style="background: white; padding: 1rem; border-radius: 8px; max-width: 600px; width: 90%; text-align: center;">
+              <p style="font-weight: bold; font-size: 1.2rem; margin-bottom: 1rem;">Watch this video first before playing the game</p>
+              <video id="gradeVideo" width="100%" controls>
+                <source id="videoSource" src="" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+              <div id="videoControls" style="margin-top: 1rem;">
+                <button id="playAgainBtn" style="margin-right: 1rem; padding: 0.5rem 1rem;">Play Again</button>
+                <button id="proceedBtn" style="padding: 0.5rem 1rem;">Proceed to Game</button>
+              </div>
+            </div>
+          </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', videoModalHTML);
+
+        const videoModal = document.getElementById('videoModal');
+        const gradeVideo = document.getElementById('gradeVideo');
+        const videoSource = document.getElementById('videoSource');
+        const playAgainBtn = document.getElementById('playAgainBtn');
+        const proceedBtn = document.getElementById('proceedBtn');
+
+        function getVideoPath(grade) {
+          if (grade === 4) return "../GRADE 4.mp4";
+          if (grade === 5) return "../GRADE 5.mp4";
+          if (grade === 6) return "../grade 6.mp4";
+          return null;
+        }
+
+        function getGamePath(grade) {
+          if (grade === 4) return "../Owl-s-Dream-main/index.html";
+          if (grade === 5) return "../Owl-s-Grade-5-main/index.html";
+          if (grade === 6) return "../Owl-s-Grade-6-main/index.html";
+          return null;
+        }
+
         startNewGameBtn.addEventListener("click", () => {
           const currentUser = JSON.parse(localStorage.getItem("currentUser"));
           if (!currentUser) {
             alert("User not logged in.");
             return;
           }
-          const key = `moduleRead_${currentUser.username || currentUser.name || 'default'}`;
-          const hasReadModule = localStorage.getItem(key) === 'true';
+          const key = `videoWatched_${currentUser.username || currentUser.name || 'default'}`;
+          const hasWatchedVideo = localStorage.getItem(key) === 'true';
+          const grade = Number(currentUser.grade);
 
-          if (Number(currentUser.grade) === 4) {
-            if (!hasReadModule) {
-              // Redirect to PDF reader page to read the module
-              window.location.href = "pdf-reader.html";
-            } else {
-              // Ask if user wants to read again
-              const readAgain = confirm("Do you want to read again this module?");
-              if (readAgain) {
-                // Reset read status and redirect to PDF reader
-                localStorage.removeItem(key);
-                window.location.href = "pdf-reader.html";
-              } else {
-                // Proceed to game
-                window.location.href = "../Owl-s-Dream-main/index.html";
-              }
-            }
-          } else if (Number(currentUser.grade) === 5) {
-            if (!hasReadModule) {
-              // Redirect to grade 5 module reading page
-              window.location.href = "grade5-module.html";
-            } else {
-              // Ask if user wants to read again
-              const readAgain = confirm("Do you want to read again this module?");
-              if (readAgain) {
-                localStorage.removeItem(key);
-                window.location.href = "grade5-module.html";
-              } else {
-                window.location.href = "../Owl-s-Grade-5-main/index.html";
-              }
-            }
-          } else if (Number(currentUser.grade) === 6) {
-            if (!hasReadModule) {
-              // Redirect to grade 6 module reading page
-              window.location.href = "grade6-module.html";
-            } else {
-              // Ask if user wants to read again
-              const readAgain = confirm("Do you want to read again this module?");
-              if (readAgain) {
-                localStorage.removeItem(key);
-                window.location.href = "grade6-module.html";
-              } else {
-                window.location.href = "../Owl-s-Grade-6-main/index.html";
-              }
-            }
-          } else {
-            alert("Game is available for Grade 4 students only.");
+          const videoPath = getVideoPath(grade);
+          const gamePath = getGamePath(grade);
+
+          if (!videoPath || !gamePath) {
+            alert("Game is available for Grades 4, 5, and 6 only.");
+            return;
           }
+
+          function showVideoModal() {
+            videoSource.src = videoPath;
+            gradeVideo.load();
+            videoModal.style.display = "flex";
+            playAgainBtn.style.display = "none";
+            proceedBtn.style.display = "none";
+            gradeVideo.currentTime = 0;
+            gradeVideo.play();
+          }
+
+          if (!hasWatchedVideo) {
+            showVideoModal();
+          } else {
+            // Show prompt to play video again or proceed
+            videoSource.src = videoPath;
+            gradeVideo.load();
+            videoModal.style.display = "flex";
+            playAgainBtn.style.display = "inline-block";
+            proceedBtn.style.display = "inline-block";
+            gradeVideo.currentTime = 0;
+            gradeVideo.pause();
+          }
+
+          gradeVideo.onended = () => {
+            localStorage.setItem(key, 'true');
+            playAgainBtn.style.display = "inline-block";
+            proceedBtn.style.display = "inline-block";
+          };
+
+          playAgainBtn.onclick = () => {
+            playAgainBtn.style.display = "none";
+            proceedBtn.style.display = "none";
+            gradeVideo.currentTime = 0;
+            gradeVideo.play();
+          };
+
+          proceedBtn.onclick = () => {
+            videoModal.style.display = "none";
+            window.location.href = gamePath;
+          };
         });
       }
 
