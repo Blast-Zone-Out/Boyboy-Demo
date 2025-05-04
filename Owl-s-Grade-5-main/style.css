@@ -1,0 +1,178 @@
+*{
+  font-family: 'Poppins';
+}
+body {
+    font-family: 'Poppins';
+    background-image: url(./assets/BG.png);
+    text-align: center;
+    color: #f7e6e6;
+    padding: 40px;
+  }
+  
+  h2, h3 {
+    color: #f3e5e5;
+  }
+  
+  input, button {
+    padding: 10px;
+    margin: 10px;
+    border-radius: 10px;
+    border: none;
+    font-size: 16px;
+  }
+  
+  button {
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  button:hover {
+    background-color: #45a049;
+  }
+  
+  #game, #login, #tutorial, #tutorial-prompt {
+    background: #ffffff10;
+    backdrop-filter: blur(10px);
+    padding: 30px;
+    border-radius: 20px;
+    margin: 20px auto;
+    max-width: 500px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    animation: fadeIn 0.5s ease-in;
+    text-align: center;
+  }
+  #game ul li,
+  #login ul li,
+  #tutorial ul li,
+  #tutorial-prompt ul li {
+    list-style: none;
+    padding-left: 0; /* optional: removes extra indentation */
+  }
+  
+  
+  #timer {
+    color: #333;
+    margin-top: 10px;
+    height: 20px;
+    background: #eee;
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  #timer-bar {
+    width: 100%;
+    height: 10px;
+    background: #ddd;
+    border-radius: 5px;
+    margin-top: 5px;
+    overflow: hidden;
+  }
+  
+  #timer-fill {
+    height: 100%;
+    width: 100%;
+    background-color: #4caf50;
+    transition: width 0.5s linear;
+  }
+  
+  
+  #leaderboard p {
+    margin: 4px 0;
+    font-weight: bold;
+  }
+  .tutorial-prompt,
+.tutorial-box {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  color: #0f0d0d;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  border: 3px solid #00aaff;
+  padding: 20px;
+  z-index: 99999; /* Make it very high to stay above everything */
+  width: 90%;
+  max-width: 400px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 0 20px rgba(0,0,0,0.4);
+}
+.tutorial-prompt,
+.tutorial-box h3 {
+  color: #0f0d0d;
+}
+
+.tutorial-prompt button,
+.tutorial-box button {
+  margin: 10px 5px;
+  padding: 10px 15px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background: #00aaff;
+  color: white;
+}
+
+.custom-alert {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.custom-alert-content {
+  background-color: #fff;
+  margin: 15% auto;
+  padding: 30px;
+  border: 1px solid #888;
+  width: 80%;
+  max-width: 400px;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  animation: fadeIn 0.3s ease-in-out;
+  font-family: 'Poppins', sans-serif;
+}
+
+.custom-alert-content h3 {
+  margin-top: 0;
+  font-size: 24px;
+  color: #333;
+}
+
+.custom-alert-content p {
+  font-size: 18px;
+  color: #555;
+}
+
+.custom-alert-content button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.custom-alert-content button:hover {
+  background-color: #45a049;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+  
+  

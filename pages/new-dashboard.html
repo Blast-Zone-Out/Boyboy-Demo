@@ -573,8 +573,34 @@
                 window.location.href = "../Owl-s-Dream-main/index.html";
               }
             }
-          } else if (Number(currentUser.grade) === 5 || Number(currentUser.grade) === 6) {
-            alert("Game is on going development");
+          } else if (Number(currentUser.grade) === 5) {
+            if (!hasReadModule) {
+              // Redirect to grade 5 module reading page
+              window.location.href = "grade5-module.html";
+            } else {
+              // Ask if user wants to read again
+              const readAgain = confirm("Do you want to read again this module?");
+              if (readAgain) {
+                localStorage.removeItem(key);
+                window.location.href = "grade5-module.html";
+              } else {
+                window.location.href = "../Owl-s-Grade-5-main/index.html";
+              }
+            }
+          } else if (Number(currentUser.grade) === 6) {
+            if (!hasReadModule) {
+              // Redirect to grade 6 module reading page
+              window.location.href = "grade6-module.html";
+            } else {
+              // Ask if user wants to read again
+              const readAgain = confirm("Do you want to read again this module?");
+              if (readAgain) {
+                localStorage.removeItem(key);
+                window.location.href = "grade6-module.html";
+              } else {
+                window.location.href = "../Owl-s-Grade-6-main/index.html";
+              }
+            }
           } else {
             alert("Game is available for Grade 4 students only.");
           }
