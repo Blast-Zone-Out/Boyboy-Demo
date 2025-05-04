@@ -36,10 +36,20 @@
       <button id="back-button" onclick="window.location.href='../pages/new-dashboard.html'">Back to Dashboard</button>
     </div> 
 
-    <!-- Floating Greeting Image -->
-    <div id="floating-greeting">
-      <img id="intro-image" src="./assets/greetings.png" alt="Welcome to Owl's Dream" />
+    <div id="customAlert" class="custom-alert">
+      <div class="custom-alert-content" id="customAlertContent">
+        <h3>Game Over!</h3>
+        <p id="customAlertMessage">Your score is X/10</p>
+        <button onclick="closeCustomAlert()">OK</button>
+      </div>
+      
     </div>
+
+    <!-- Floating Greeting Image -->
+    <a href="#" onclick="showCustomAlert('🦉 I\'m your guide! Need help? Use the hints or tutorials during the game.')"
+  title="Need help?">
+ <img src="./assets/owl 2.png" alt="Owl Mascot" class="pulse-owl">
+</a>
 
     <!-- ✅ Floating Tutorial Prompt (injected via JS) -->
     <!-- ✅ Step-by-step Tutorial Box (injected via JS) -->

@@ -174,5 +174,55 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-  
+.pulse-owl {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 250px;
+  height: auto;
+  animation: pulse 3s ease-in-out infinite;
+  z-index: 100;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+a[title] {
+  position: relative;
+}
+
+a[title]::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 120%;
+  right: 0;
+  background-color: #333;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(5px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 1000;
+}
+
+a[title]:hover::after {
+  opacity: 1;
+  transform: translateY(0);
+}  
   

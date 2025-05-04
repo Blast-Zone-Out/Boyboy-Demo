@@ -7,6 +7,30 @@ let userAnswers = [];
 let isPaused = false;
 let selectedQuestions = [];
 
+const questions = [
+  { number: 34, roundTo: 10, answer: 30 },       // Easy
+  { number: 67, roundTo: 10, answer: 70 },       // Easy
+  { number: 123, roundTo: 100, answer: 100 },    // Hard
+  { number: 455, roundTo: 100, answer: 500 },    // Hard
+  { number: 999, roundTo: 10, answer: 1000 },    // Hard
+  { number: 12, roundTo: 10, answer: 10 },       // Easy
+  { number: 48, roundTo: 10, answer: 50 },       // Easy
+  { number: 85, roundTo: 10, answer: 90 },       // Easy
+  { number: 321, roundTo: 100, answer: 300 },    // Hard
+  { number: 764, roundTo: 100, answer: 800 },    // Hard
+  { number: 5, roundTo: 10, answer: 10 },        // Easy
+  { number: 19, roundTo: 10, answer: 20 },       // Easy
+  { number: 142, roundTo: 100, answer: 100 },    // Hard
+  { number: 876, roundTo: 100, answer: 900 },    // Hard
+  { number: 29, roundTo: 10, answer: 30 },       // Easy
+  { number: 51, roundTo: 10, answer: 50 },       // Easy
+  { number: 604, roundTo: 100, answer: 600 },    // Hard
+  { number: 388, roundTo: 100, answer: 400 },    // Hard
+  { number: 73, roundTo: 10, answer: 70 },       // Easy
+  { number: 999, roundTo: 100, answer: 1000 }    // Hard
+]
+;
+
 document.addEventListener("DOMContentLoaded", () => {
   const currentUser = JSON.parse(localStorage.getItem("currentUser"));
   if (currentUser && (currentUser.name || currentUser.username)) {
