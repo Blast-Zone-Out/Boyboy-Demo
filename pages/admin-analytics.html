@@ -93,18 +93,59 @@
       }
 
       filteredStudents.forEach(student => {
-        // Assuming student.progress is a number 0-100 representing lesson completion percentage
-        const progressPercent = student.progress || 0;
-        const lesson = student.currentLesson || 'N/A';
         const studentName = student.username || student.name || 'Unknown';
+        const lesson = student.currentLesson || 'N/A';
         const lastLogin = student.lastLogin ? new Date(student.lastLogin).toLocaleString() : 'Never';
+
+        // Calculate progress based on passed final assessment modules
+        const modules = JSON.parse(localStorage.getItem('modules') || '[]');
+        const userGrade = student.grade ? student.grade.toString() : null;
+        const filteredModules = userGrade ? modules.filter(m => m.grade === userGrade) : modules;
+
+        let passedCount = 0;
+        filteredModules.forEach(module => {
+          const completedKey = `finalAssessmentCompleted_${student.username}_${module.title}`;
+          const isCompleted = localStorage.getItem(completedKey) === 'true';
+          if (isCompleted) {
+            // Check if passed (score >= 80% or correctCount >= 8)
+            const scoreKey = `finalAssessmentScore_${student.username}_${module.title}`;
+            const scoreStr = localStorage.getItem(scoreKey);
+            const score = scoreStr ? parseFloat(scoreStr) : 0;
+            if (score >= 80) {
+              passedCount++;
+            }
+          }
+        });
+
+        const totalModules = filteredModules.length;
+        let progressPercent = 0;
+
+        if (totalModules > 0) {
+          progressPercent = Math.round((passedCount / totalModules) * 100);
+        } else {
+          // No modules uploaded for this grade, progress bar stays at 0
+          progressPercent = 0;
+        }
 
         const progressItem = document.createElement('div');
         progressItem.className = 'progress-item';
 
         const label = document.createElement('div');
         label.className = 'progress-label';
-        label.textContent = `Student: ${studentName} - Lesson ${lesson} - Last Login: ${lastLogin}`;
+
+        if (totalModules === 0) {
+          if (lesson === 'N/A') {
+            label.textContent = `Student: ${studentName} - Last Login: ${lastLogin} - No modules uploaded for grade ${userGrade}`;
+          } else {
+            label.textContent = `Student: ${studentName} - Lesson ${lesson} - Last Login: ${lastLogin} - No modules uploaded for grade ${userGrade}`;
+          }
+        } else {
+          if (lesson === 'N/A') {
+            label.textContent = `Student: ${studentName} - Last Login: ${lastLogin}`;
+          } else {
+            label.textContent = `Student: ${studentName} - Lesson ${lesson} - Last Login: ${lastLogin}`;
+          }
+        }
 
         const progressBar = document.createElement('div');
         progressBar.className = 'progress-bar';
@@ -120,6 +161,14 @@
         progressContainer.appendChild(progressItem);
       });
     }
+
+    // Refresh progress every 10 seconds to reflect updates dynamically
+    setInterval(() => {
+      loadStudentProgress();
+    }, 10000);
+
+    // Initial load
+    loadStudentProgress();
 
     loadStudentProgress();
   </script>
