@@ -211,7 +211,7 @@
         <div class="card green">
           <div class="icon" aria-label="Active Classes icon" title="Active Classes">🏫</div>
           <div class="text">
-            <div class="label">Active Classes</div>
+            <div class="label">Unfinished Final Assesment </div>
             <div class="value" id="activeClasses">0</div>
           </div>
         </div>
@@ -238,7 +238,6 @@
         </div>
       </div>
     </section>
-
     <section id="final-assessment" class="tab-content" aria-label="Final Assessment" style="display:none;">
       <h1>Final Assessment</h1>
       <div class="quick-actions">
@@ -287,6 +286,62 @@
           const initial = (currentUser.name || currentUser.username || "S").charAt(0).toUpperCase();
           userAvatarDiv.textContent = initial;
         }
+
+        // Update total modules count for the teacher per grade account
+      // Function to update unfinished final assessments count and average score
+      function updateDashboardStats() {
+        const totalModulesElem = document.getElementById('totalModules');
+        const unfinishedCountElem = document.getElementById('activeClasses');
+        const averageScoreElem = document.getElementById('averageScore');
+        const modules = JSON.parse(localStorage.getItem('modules') || '[]');
+        const userGrade = currentUser.grade ? currentUser.grade.toString() : null;
+        const filteredModules = userGrade ? modules.filter(m => m.grade === userGrade) : modules;
+
+        if (totalModulesElem) {
+          totalModulesElem.textContent = filteredModules.length.toString();
+        }
+
+        if (unfinishedCountElem) {
+          let unfinishedCount = 0;
+          filteredModules.forEach(module => {
+            const completedKey = `finalAssessmentCompleted_${currentUser.username}_${module.title}`;
+            const isCompleted = localStorage.getItem(completedKey) === 'true';
+            if (!isCompleted) {
+              unfinishedCount++;
+            }
+          });
+          unfinishedCountElem.textContent = unfinishedCount.toString();
+        }
+
+        if (averageScoreElem) {
+          let totalCorrect = 0;
+          let totalQuestions = 0;
+          filteredModules.forEach(module => {
+            const completedKey = `finalAssessmentCompleted_${currentUser.username}_${module.title}`;
+            const isCompleted = localStorage.getItem(completedKey) === 'true';
+            if (isCompleted) {
+              const userAnswersKey = `finalAssessmentAnswers_${currentUser.username}_${module.title}`;
+              const userAnswers = JSON.parse(localStorage.getItem(userAnswersKey) || '{}');
+              if (userAnswers && Object.keys(userAnswers).length > 0) {
+                let correctCount = 0;
+                module.questions.forEach((q, index) => {
+                  const userAnswer = userAnswers[`${module.title}_answer${index + 1}`] || userAnswers[`answer${index + 1}`];
+                  if (userAnswer && userAnswer.trim().toLowerCase() === q.answer.trim().toLowerCase()) {
+                    correctCount++;
+                  }
+                });
+                totalCorrect += correctCount;
+                totalQuestions += module.questions.length;
+              }
+            }
+          });
+          const avgScorePercent = totalQuestions > 0 ? ((totalCorrect / totalQuestions) * 100).toFixed(2) : '0.00';
+          averageScoreElem.textContent = `${avgScorePercent}%`;
+        }
+      }
+
+      // Initial call to update counts and average score on page load
+      updateDashboardStats();
 
         // Auto show assessment results if completed
         const assessmentResultsContainer = document.getElementById('assessmentResultsContainer');
@@ -469,52 +524,55 @@
             return;
           }
 
-          finalAssessmentMessage.style.color = 'green';
-          finalAssessmentMessage.textContent = 'Your answers have been submitted. Thank you!';
+        finalAssessmentMessage.style.color = 'green';
+        finalAssessmentMessage.textContent = 'Your answers have been submitted. Thank you!';
 
-          // Save answers to localStorage
-          const formData = new FormData(finalAssessmentForm);
-          const answers = {};
-          for (const [key, value] of formData.entries()) {
-            answers[key] = value;
+        // Save answers to localStorage
+        const formData = new FormData(finalAssessmentForm);
+        const answers = {};
+        for (const [key, value] of formData.entries()) {
+          answers[key] = value;
+        }
+        if (currentUser && currentUser.username) {
+          const currentModule = finalAssessmentForm.getAttribute('data-current-module');
+          localStorage.setItem(`finalAssessmentAnswers_${currentUser.username}_${currentModule}`, JSON.stringify(answers));
+          localStorage.setItem(`finalAssessmentCompleted_${currentUser.username}_${currentModule}`, 'true');
+
+          // Calculate and save time taken for assessment
+          const startTimeKey = `finalAssessmentStartTime_${currentUser.username}_${currentModule}`;
+          const startTimeStr = localStorage.getItem(startTimeKey);
+          if (startTimeStr) {
+            const startTime = new Date(startTimeStr);
+            const endTime = new Date();
+            const timeTakenMinutes = Math.round((endTime - startTime) / 60000); // convert ms to minutes
+            localStorage.setItem(`finalAssessmentTimeTaken_${currentUser.username}_${currentModule}`, timeTakenMinutes.toString());
+            localStorage.removeItem(startTimeKey);
           }
-          if (currentUser && currentUser.username) {
-            const currentModule = finalAssessmentForm.getAttribute('data-current-module');
-            localStorage.setItem(`finalAssessmentAnswers_${currentUser.username}_${currentModule}`, JSON.stringify(answers));
-            localStorage.setItem(`finalAssessmentCompleted_${currentUser.username}_${currentModule}`, 'true');
 
-            // Calculate and save time taken for assessment
-            const startTimeKey = `finalAssessmentStartTime_${currentUser.username}_${currentModule}`;
-            const startTimeStr = localStorage.getItem(startTimeKey);
-            if (startTimeStr) {
-              const startTime = new Date(startTimeStr);
-              const endTime = new Date();
-              const timeTakenMinutes = Math.round((endTime - startTime) / 60000); // convert ms to minutes
-              localStorage.setItem(`finalAssessmentTimeTaken_${currentUser.username}_${currentModule}`, timeTakenMinutes.toString());
-              localStorage.removeItem(startTimeKey);
+          // Increment final assessment attempts count per module
+          const attemptKey = `finalAssessmentAttempts_${currentUser.username}_${currentModule}`;
+          let attempts = parseInt(localStorage.getItem(attemptKey) || '0', 10);
+          attempts += 1;
+          localStorage.setItem(attemptKey, attempts.toString());
+
+          // Disable the Take Final Assessment button immediately
+          const takeButtons = document.querySelectorAll('.takeFinalAssessmentModuleBtn');
+          takeButtons.forEach(btn => {
+            if (btn.getAttribute('data-module-title') === currentModule) {
+              btn.disabled = true;
+              btn.style.opacity = '0.6';
+              btn.style.cursor = 'not-allowed';
+              btn.textContent = 'Assessment Completed';
             }
+          });
 
-            // Increment final assessment attempts count per module
-            const attemptKey = `finalAssessmentAttempts_${currentUser.username}_${currentModule}`;
-            let attempts = parseInt(localStorage.getItem(attemptKey) || '0', 10);
-            attempts += 1;
-            localStorage.setItem(attemptKey, attempts.toString());
+          // Update unfinished count after submission
+          updateDashboardStats();
+        }
 
-            // Disable the Take Final Assessment button immediately
-            const takeButtons = document.querySelectorAll('.takeFinalAssessmentModuleBtn');
-            takeButtons.forEach(btn => {
-              if (btn.getAttribute('data-module-title') === currentModule) {
-                btn.disabled = true;
-                btn.style.opacity = '0.6';
-                btn.style.cursor = 'not-allowed';
-                btn.textContent = 'Assessment Completed';
-              }
-            });
-          }
-
-          finalAssessmentForm.reset();
-          // Hide the questions container
-          finalAssessmentQuestionsContainer.style.display = 'none';
+        finalAssessmentForm.reset();
+        // Hide the questions container
+        finalAssessmentQuestionsContainer.style.display = 'none';
         });
 
       // Quick Actions content switching based on tab clicks
