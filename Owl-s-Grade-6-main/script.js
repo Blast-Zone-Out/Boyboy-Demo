@@ -265,6 +265,12 @@ function draw() {
 function generateQuestion() {
     questionsAsked++;
     mistakeCount = 0;  // ✅ Reset on new question
+
+    // Hide arrow key buttons when question appears
+    const mobileControls = document.getElementById("mobile-controls");
+    if (mobileControls) {
+      mobileControls.style.display = "none";
+    }
   
     const frac1 = getRandomFraction();
     const frac2 = getRandomFraction();
@@ -280,8 +286,15 @@ function generateQuestion() {
 
 
 
-  function checkAnswer(correct) {
+function checkAnswer(correct) {
     const userInput = document.getElementById("answer").value.trim();
+
+    // Show arrow key buttons again after submitting answer
+    const mobileControls = document.getElementById("mobile-controls");
+    if (mobileControls) {
+      mobileControls.style.display = "grid";
+    }
+
     document.getElementById("question-box").innerHTML = "";
   
     const isCorrect = normalizeFraction(userInput) === normalizeFraction(correct);
