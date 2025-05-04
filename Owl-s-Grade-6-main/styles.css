@@ -116,6 +116,69 @@ body {
       font-size: 14px; /* Smaller input and button font size */
     }
   }
+
+  /* Mobile Controls for Arrow Keys */
+  #mobile-controls {
+    margin-top: 50px;
+    display: grid;
+    grid-template-areas:
+      ". up ."
+      "left . right"
+      ". down .";
+    grid-template-columns: 60px 60px 60px;
+    grid-template-rows: 60px 60px 60px;
+    justify-content: start;
+    gap: 10px;
+    z-index: 1000;
+    pointer-events: auto;
+    width: 100%;
+    max-width: 500px;
+    margin-left: 0;
+    margin-right: auto;
+  }
+
+  #mobile-controls .control-btn {
+    background-color: #007bff;
+    border: none;
+    color: white;
+    font-size: 28px;
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    user-select: none;
+    touch-action: manipulation;
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.4);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  #mobile-controls .control-btn:active {
+    background-color: #0056b3;
+    box-shadow: 0 2px 4px rgba(0, 86, 179, 0.6);
+    color: white;
+  }
+
+  #btn-up {
+    grid-area: up;
+  }
+
+  #btn-left {
+    grid-area: left;
+  }
+
+  #btn-right {
+    grid-area: right;
+  }
+
+  #btn-down {
+    grid-area: down;
+  }
+
+  @media screen and (min-width: 769px) {
+    #mobile-controls {
+      /* display: none; */
+      display: grid;
+    }
+  }
   @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }

@@ -83,6 +83,19 @@ function startGame() {
       e.preventDefault();
       keys["ArrowUp"] = false;
     });
+    // Add mouse events for desktop click and hold
+    btnUp.addEventListener("mousedown", e => {
+      e.preventDefault();
+      keys["ArrowUp"] = true;
+    });
+    btnUp.addEventListener("mouseup", e => {
+      e.preventDefault();
+      keys["ArrowUp"] = false;
+    });
+    btnUp.addEventListener("mouseleave", e => {
+      e.preventDefault();
+      keys["ArrowUp"] = false;
+    });
   }
 
   if (btnDown) {
@@ -91,6 +104,19 @@ function startGame() {
       keys["ArrowDown"] = true;
     });
     btnDown.addEventListener("touchend", e => {
+      e.preventDefault();
+      keys["ArrowDown"] = false;
+    });
+    // Add mouse events for desktop click and hold
+    btnDown.addEventListener("mousedown", e => {
+      e.preventDefault();
+      keys["ArrowDown"] = true;
+    });
+    btnDown.addEventListener("mouseup", e => {
+      e.preventDefault();
+      keys["ArrowDown"] = false;
+    });
+    btnDown.addEventListener("mouseleave", e => {
       e.preventDefault();
       keys["ArrowDown"] = false;
     });
@@ -105,6 +131,19 @@ function startGame() {
       e.preventDefault();
       keys["ArrowLeft"] = false;
     });
+    // Add mouse events for desktop click and hold
+    btnLeft.addEventListener("mousedown", e => {
+      e.preventDefault();
+      keys["ArrowLeft"] = true;
+    });
+    btnLeft.addEventListener("mouseup", e => {
+      e.preventDefault();
+      keys["ArrowLeft"] = false;
+    });
+    btnLeft.addEventListener("mouseleave", e => {
+      e.preventDefault();
+      keys["ArrowLeft"] = false;
+    });
   }
 
   if (btnRight) {
@@ -113,6 +152,19 @@ function startGame() {
       keys["ArrowRight"] = true;
     });
     btnRight.addEventListener("touchend", e => {
+      e.preventDefault();
+      keys["ArrowRight"] = false;
+    });
+    // Add mouse events for desktop click and hold
+    btnRight.addEventListener("mousedown", e => {
+      e.preventDefault();
+      keys["ArrowRight"] = true;
+    });
+    btnRight.addEventListener("mouseup", e => {
+      e.preventDefault();
+      keys["ArrowRight"] = false;
+    });
+    btnRight.addEventListener("mouseleave", e => {
       e.preventDefault();
       keys["ArrowRight"] = false;
     });
@@ -442,3 +494,28 @@ function handleConfirm(response) {
   document.getElementById("customConfirm").style.display = "none";
   if (confirmCallback) confirmCallback(response);
 }
+
+// Position mobile controls fixed below question box
+function positionMobileControls() {
+  const questionBox = document.getElementById('question-box');
+  const mobileControls = document.getElementById('mobile-controls');
+  if (!questionBox || !mobileControls) return;
+
+  const rect = questionBox.getBoundingClientRect();
+  mobileControls.style.position = 'fixed';
+  mobileControls.style.top = `${rect.bottom + 10}px`;
+  // Center horizontally below question box
+  const controlsWidth = mobileControls.offsetWidth;
+  const leftPos = rect.left + (rect.width / 2) - (controlsWidth / 2);
+  mobileControls.style.left = `${leftPos}px`;
+  mobileControls.style.width = `${rect.width}px`;
+  mobileControls.style.maxWidth = '500px';
+  mobileControls.style.marginLeft = '0';
+  mobileControls.style.marginRight = '0';
+  mobileControls.style.zIndex = '1000';
+}
+
+// Call on load and on window resize/scroll
+window.addEventListener('load', positionMobileControls);
+window.addEventListener('resize', positionMobileControls);
+window.addEventListener('scroll', positionMobileControls);
