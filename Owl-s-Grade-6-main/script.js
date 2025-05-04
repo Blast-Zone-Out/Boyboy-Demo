@@ -67,6 +67,56 @@ function startGame() {
   draw();
   window.addEventListener("keydown", e => keys[e.key] = true);
   window.addEventListener("keyup", e => keys[e.key] = false);
+
+  // Add touch event listeners for mobile controls
+  const btnUp = document.getElementById("btn-up");
+  const btnDown = document.getElementById("btn-down");
+  const btnLeft = document.getElementById("btn-left");
+  const btnRight = document.getElementById("btn-right");
+
+  if (btnUp) {
+    btnUp.addEventListener("touchstart", e => {
+      e.preventDefault();
+      keys["ArrowUp"] = true;
+    });
+    btnUp.addEventListener("touchend", e => {
+      e.preventDefault();
+      keys["ArrowUp"] = false;
+    });
+  }
+
+  if (btnDown) {
+    btnDown.addEventListener("touchstart", e => {
+      e.preventDefault();
+      keys["ArrowDown"] = true;
+    });
+    btnDown.addEventListener("touchend", e => {
+      e.preventDefault();
+      keys["ArrowDown"] = false;
+    });
+  }
+
+  if (btnLeft) {
+    btnLeft.addEventListener("touchstart", e => {
+      e.preventDefault();
+      keys["ArrowLeft"] = true;
+    });
+    btnLeft.addEventListener("touchend", e => {
+      e.preventDefault();
+      keys["ArrowLeft"] = false;
+    });
+  }
+
+  if (btnRight) {
+    btnRight.addEventListener("touchstart", e => {
+      e.preventDefault();
+      keys["ArrowRight"] = true;
+    });
+    btnRight.addEventListener("touchend", e => {
+      e.preventDefault();
+      keys["ArrowRight"] = false;
+    });
+  }
   requestAnimationFrame(updateGame);
 }
 

@@ -204,9 +204,25 @@ function submitAnswer() {
     document.getElementById("customAlert").style.display = "block";
   }
   
-  function closeCustomAlert() {
-    document.getElementById("customAlert").style.display = "none";
+function closeCustomAlert() {
+  document.getElementById("customAlert").style.display = "none";
+} 
+
+function backToDashboard() {
+  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+  const leaderboardContainer = document.getElementById("leaderboard");
+  const gameContainer = document.getElementById("game");
+  if (currentUser && currentUser.role === "student") {
+    window.location.href = "../pages/new-dashboard.html";
+  } else {
+    if (leaderboardContainer) {
+      leaderboardContainer.classList.add("hidden");
+    }
+    if (gameContainer) {
+      gameContainer.classList.remove("hidden");
+    }
   }
+}
   
   
   
@@ -287,6 +303,7 @@ function endGame() {
   resultHTML += `
     <button onclick="restartGame()">🔁 Play Again</button>
     <button onclick="window.location.href='leaderboard.html'">📊 View Leaderboard</button>
+    <button onclick="backToDashboard()">⬅ Back to Dashboard</button>
   `;
 
   resultDiv.innerHTML = resultHTML;
