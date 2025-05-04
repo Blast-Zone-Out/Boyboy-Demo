@@ -287,6 +287,72 @@
           const initial = (currentUser.name || currentUser.username || "S").charAt(0).toUpperCase();
           userAvatarDiv.textContent = initial;
         }
+
+        // Auto show assessment results if completed
+        const assessmentResultsContainer = document.getElementById('assessmentResultsContainer');
+        const assessmentScoreDiv = document.getElementById('assessmentScore');
+        const finalAssessmentQuestionsContainer = document.getElementById('finalAssessmentQuestionsContainer');
+
+        const completedAny = localStorage.getItem(`finalAssessmentCompleted_${currentUser.username}`) === 'true';
+        if (completedAny) {
+          // Load modules from localStorage
+          const modules = JSON.parse(localStorage.getItem('modules') || '[]');
+          const userGrade = currentUser.grade ? currentUser.grade.toString() : null;
+          const filteredModules = userGrade ? modules.filter(m => m.grade === userGrade) : modules;
+
+          if (filteredModules.length > 0) {
+            // Retrieve user's answers from localStorage
+            const userAnswersKey = `finalAssessmentAnswers_${currentUser.username}`;
+            const userAnswers = JSON.parse(localStorage.getItem(userAnswersKey) || '{}');
+
+            if (userAnswers && Object.keys(userAnswers).length > 0) {
+              // Clear previous results
+              assessmentScoreDiv.innerHTML = '';
+
+              // Iterate over each module and calculate score separately
+              filteredModules.forEach(module => {
+                let correctCount = 0;
+                module.questions.forEach((q, index) => {
+                  const userAnswer = userAnswers[`${module.title}_answer${index + 1}`] || userAnswers[`answer${index + 1}`];
+                  if (userAnswer && userAnswer.trim().toLowerCase() === q.answer.trim().toLowerCase()) {
+                    correctCount++;
+                  }
+                });
+
+                const totalQuestions = module.questions.length;
+                const scorePercent = ((correctCount / totalQuestions) * 100).toFixed(2);
+
+                // Retrieve time taken from localStorage
+                let timeTakenMinutes = null;
+                if (currentUser && currentUser.username) {
+                  const timeTakenStr = localStorage.getItem(`finalAssessmentTimeTaken_${currentUser.username}_${module.title}`);
+                  if (timeTakenStr) {
+                    timeTakenMinutes = timeTakenStr;
+                  }
+                }
+
+                // Append each module's result
+                const passed = correctCount >= 8;
+                const passFailText = passed ? '<span style="color: green; font-weight: 700;">Passed</span>' : '<span style="color: red; font-weight: 700;">Failed</span>';
+                const timeTakenText = timeTakenMinutes !== null ? `<p>Time Taken: ${timeTakenMinutes} minute(s)</p>` : '';
+                const moduleResultHTML = `
+                  <div style="border: 1px solid #2980b9; border-radius: 6px; padding: 1rem; margin-bottom: 1rem; background: #e0f7fa;">
+                    <h4>Module: ${module.title}</h4>
+                    <p>You scored ${correctCount} out of ${totalQuestions} questions correctly.</p>
+                    <p>Percentage: ${scorePercent}%</p>
+                    <p>Status: ${passFailText}</p>
+                    ${timeTakenText}
+                  </div>
+                `;
+                assessmentScoreDiv.innerHTML += moduleResultHTML;
+              });
+
+              // Show the results container and hide the questions container
+              assessmentResultsContainer.style.display = 'block';
+              finalAssessmentQuestionsContainer.style.display = 'none';
+            }
+          }
+        }
       }
       const logoutBtn = document.getElementById("logoutBtn");
       if (logoutBtn) {
@@ -333,20 +399,20 @@
           return;
         }
 
-        // Retrieve user's answers from localStorage
-        const userAnswersKey = `finalAssessmentAnswers_${currentUser.username}`;
-        const userAnswers = JSON.parse(localStorage.getItem(userAnswersKey) || '{}');
-
-        if (!userAnswers || Object.keys(userAnswers).length === 0) {
-          alert('No answers found for your final assessment.');
-          return;
-        }
-
         // Clear previous results
         assessmentScoreDiv.innerHTML = '';
 
         // Iterate over each module and calculate score separately
         filteredModules.forEach(module => {
+          // Retrieve user's answers for this module from localStorage
+          const userAnswersKey = `finalAssessmentAnswers_${currentUser.username}_${module.title}`;
+          const userAnswers = JSON.parse(localStorage.getItem(userAnswersKey) || '{}');
+
+          if (!userAnswers || Object.keys(userAnswers).length === 0) {
+            // Skip this module if no answers found
+            return;
+          }
+
           let correctCount = 0;
           module.questions.forEach((q, index) => {
             const userAnswer = userAnswers[`${module.title}_answer${index + 1}`] || userAnswers[`answer${index + 1}`];
@@ -358,12 +424,26 @@
           const totalQuestions = module.questions.length;
           const scorePercent = ((correctCount / totalQuestions) * 100).toFixed(2);
 
+          // Retrieve time taken from localStorage
+          let timeTakenMinutes = null;
+          if (currentUser && currentUser.username) {
+            const timeTakenStr = localStorage.getItem(`finalAssessmentTimeTaken_${currentUser.username}_${module.title}`);
+            if (timeTakenStr) {
+              timeTakenMinutes = timeTakenStr;
+            }
+          }
+
           // Append each module's result
+          const passed = correctCount >= 8;
+          const passFailText = passed ? '<span style="color: green; font-weight: 700;">Passed</span>' : '<span style="color: red; font-weight: 700;">Failed</span>';
+          const timeTakenText = timeTakenMinutes !== null ? `<p>Time Taken: ${timeTakenMinutes} minute(s)</p>` : '';
           const moduleResultHTML = `
             <div style="border: 1px solid #2980b9; border-radius: 6px; padding: 1rem; margin-bottom: 1rem; background: #e0f7fa;">
               <h4>Module: ${module.title}</h4>
               <p>You scored ${correctCount} out of ${totalQuestions} questions correctly.</p>
               <p>Percentage: ${scorePercent}%</p>
+              <p>Status: ${passFailText}</p>
+              ${timeTakenText}
             </div>
           `;
           assessmentScoreDiv.innerHTML += moduleResultHTML;
@@ -380,51 +460,62 @@
       });
 
       // Modify final assessment form submission to save answers
-      finalAssessmentForm.addEventListener('submit', (e) => {
-        e.preventDefault();
+        finalAssessmentForm.addEventListener('submit', (e) => {
+          e.preventDefault();
 
-        // Confirmation dialog before submission
-        const confirmSubmit = confirm("Do you want to submit your answer?");
-        if (!confirmSubmit) {
-          return;
-        }
+          // Confirmation dialog before submission
+          const confirmSubmit = confirm("Do you want to submit your answer?");
+          if (!confirmSubmit) {
+            return;
+          }
 
-        finalAssessmentMessage.style.color = 'green';
-        finalAssessmentMessage.textContent = 'Your answers have been submitted. Thank you!';
+          finalAssessmentMessage.style.color = 'green';
+          finalAssessmentMessage.textContent = 'Your answers have been submitted. Thank you!';
 
-        // Save answers to localStorage
-        const formData = new FormData(finalAssessmentForm);
-        const answers = {};
-        for (const [key, value] of formData.entries()) {
-          answers[key] = value;
-        }
-        if (currentUser && currentUser.username) {
-          const currentModule = finalAssessmentForm.getAttribute('data-current-module');
-          localStorage.setItem(`finalAssessmentAnswers_${currentUser.username}_${currentModule}`, JSON.stringify(answers));
-          localStorage.setItem(`finalAssessmentCompleted_${currentUser.username}_${currentModule}`, 'true');
+          // Save answers to localStorage
+          const formData = new FormData(finalAssessmentForm);
+          const answers = {};
+          for (const [key, value] of formData.entries()) {
+            answers[key] = value;
+          }
+          if (currentUser && currentUser.username) {
+            const currentModule = finalAssessmentForm.getAttribute('data-current-module');
+            localStorage.setItem(`finalAssessmentAnswers_${currentUser.username}_${currentModule}`, JSON.stringify(answers));
+            localStorage.setItem(`finalAssessmentCompleted_${currentUser.username}_${currentModule}`, 'true');
 
-          // Increment final assessment attempts count per module
-          const attemptKey = `finalAssessmentAttempts_${currentUser.username}_${currentModule}`;
-          let attempts = parseInt(localStorage.getItem(attemptKey) || '0', 10);
-          attempts += 1;
-          localStorage.setItem(attemptKey, attempts.toString());
-
-          // Disable the Take Final Assessment button immediately
-          const takeButtons = document.querySelectorAll('.takeFinalAssessmentModuleBtn');
-          takeButtons.forEach(btn => {
-            if (btn.getAttribute('data-module-title') === currentModule) {
-              btn.disabled = true;
-              btn.style.opacity = '0.6';
-              btn.style.cursor = 'not-allowed';
-              btn.textContent = 'Assessment Completed';
+            // Calculate and save time taken for assessment
+            const startTimeKey = `finalAssessmentStartTime_${currentUser.username}_${currentModule}`;
+            const startTimeStr = localStorage.getItem(startTimeKey);
+            if (startTimeStr) {
+              const startTime = new Date(startTimeStr);
+              const endTime = new Date();
+              const timeTakenMinutes = Math.round((endTime - startTime) / 60000); // convert ms to minutes
+              localStorage.setItem(`finalAssessmentTimeTaken_${currentUser.username}_${currentModule}`, timeTakenMinutes.toString());
+              localStorage.removeItem(startTimeKey);
             }
-          });
-        }
 
-        finalAssessmentForm.reset();
-        // Hide the questions container
-        finalAssessmentQuestionsContainer.style.display = 'none';
-      });
+            // Increment final assessment attempts count per module
+            const attemptKey = `finalAssessmentAttempts_${currentUser.username}_${currentModule}`;
+            let attempts = parseInt(localStorage.getItem(attemptKey) || '0', 10);
+            attempts += 1;
+            localStorage.setItem(attemptKey, attempts.toString());
+
+            // Disable the Take Final Assessment button immediately
+            const takeButtons = document.querySelectorAll('.takeFinalAssessmentModuleBtn');
+            takeButtons.forEach(btn => {
+              if (btn.getAttribute('data-module-title') === currentModule) {
+                btn.disabled = true;
+                btn.style.opacity = '0.6';
+                btn.style.cursor = 'not-allowed';
+                btn.textContent = 'Assessment Completed';
+              }
+            });
+          }
+
+          finalAssessmentForm.reset();
+          // Hide the questions container
+          finalAssessmentQuestionsContainer.style.display = 'none';
+        });
 
       // Quick Actions content switching based on tab clicks
       const tabLinks = document.querySelectorAll(".header-center nav a.tab-link");
@@ -587,55 +678,62 @@
             modulesList.querySelectorAll('.takeFinalAssessmentModuleBtn').forEach(btn => {
               btn.addEventListener('click', () => {
                 const moduleTitle = btn.getAttribute('data-module-title');
-                // Show the questions container
-                finalAssessmentQuestionsContainer.style.display = 'block';
-                finalAssessmentMessage.textContent = '';
-                questionsList.innerHTML = '';
+            // Show the questions container
+            finalAssessmentQuestionsContainer.style.display = 'block';
+            finalAssessmentMessage.textContent = '';
+            questionsList.innerHTML = '';
 
-                // Load modules from localStorage
-                const modules = JSON.parse(localStorage.getItem('modules') || '[]');
+            // Load modules from localStorage
+            const modules = JSON.parse(localStorage.getItem('modules') || '[]');
 
-                // Find the module by title
-                const module = modules.find(m => m.title === moduleTitle);
+            // Find the module by title
+            const module = modules.find(m => m.title === moduleTitle);
 
-                if (!module) {
-                  questionsList.innerHTML = '<p>Module not found for final assessment.</p>';
-                  return;
-                }
+            if (!module) {
+              questionsList.innerHTML = '<p>Module not found for final assessment.</p>';
+              return;
+            }
 
-                // Display module title
-                const moduleTitleElem = document.createElement('h4');
-                moduleTitleElem.textContent = `Module: ${module.title}`;
-                questionsList.appendChild(moduleTitleElem);
+            // Record start time of assessment for this user and module
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (currentUser && currentUser.username) {
+              const startTimeKey = `finalAssessmentStartTime_${currentUser.username}_${module.title}`;
+              localStorage.setItem(startTimeKey, new Date().toISOString());
+            }
 
-                // Display questions with input fields for answers
-                module.questions.forEach((q, index) => {
-                  const questionDiv = document.createElement('div');
-                  questionDiv.style.marginBottom = '1rem';
+            // Display module title
+            const moduleTitleElem = document.createElement('h4');
+            moduleTitleElem.textContent = `Module: ${module.title}`;
+            questionsList.appendChild(moduleTitleElem);
 
-                  const questionLabel = document.createElement('label');
-                  questionLabel.textContent = `Q${index + 1}: ${q.question}`;
-                  questionLabel.setAttribute('for', `answer${index + 1}`);
+            // Display questions with input fields for answers
+            module.questions.forEach((q, index) => {
+              const questionDiv = document.createElement('div');
+              questionDiv.style.marginBottom = '1rem';
 
-                  const answerInput = document.createElement('input');
-                  answerInput.type = 'text';
-                  answerInput.id = `answer${index + 1}`;
-                  answerInput.name = `answer${index + 1}`;
-                  answerInput.style.width = '100%';
-                  answerInput.style.padding = '0.5rem';
-                  answerInput.style.marginTop = '0.25rem';
-                  answerInput.required = true;
+              const questionLabel = document.createElement('label');
+              questionLabel.textContent = `Q${index + 1}: ${q.question}`;
+              questionLabel.setAttribute('for', `answer${index + 1}`);
 
-                  questionDiv.appendChild(questionLabel);
-                  questionDiv.appendChild(answerInput);
-                  questionsList.appendChild(questionDiv);
-                });
+              const answerInput = document.createElement('input');
+              answerInput.type = 'text';
+              answerInput.id = `answer${index + 1}`;
+              answerInput.name = `answer${index + 1}`;
+              answerInput.style.width = '100%';
+              answerInput.style.padding = '0.5rem';
+              answerInput.style.marginTop = '0.25rem';
+              answerInput.required = true;
 
-                // Store current module title for submission
-                finalAssessmentForm.setAttribute('data-current-module', module.title);
+              questionDiv.appendChild(questionLabel);
+              questionDiv.appendChild(answerInput);
+              questionsList.appendChild(questionDiv);
+            });
 
-                // Show the form
-                finalAssessmentForm.style.display = 'block';
+            // Store current module title for submission
+            finalAssessmentForm.setAttribute('data-current-module', module.title);
+
+            // Show the form
+            finalAssessmentForm.style.display = 'block';
               });
             });
           }
