@@ -429,6 +429,34 @@ window.addEventListener('DOMContentLoaded', () => {
       return JSON.parse(localStorage.getItem('students')) || [];
     }
 
+    // Calculate academic performance progress percent for a student
+    function calculateAcademicPerformance(student) {
+      const modules = JSON.parse(localStorage.getItem('modules') || '[]');
+      const userGrade = student.grade ? student.grade.toString() : null;
+      const filteredModules = userGrade ? modules.filter(m => m.grade === userGrade) : modules;
+
+      let passedCount = 0;
+      filteredModules.forEach(module => {
+        const completedKey = `finalAssessmentCompleted_${student.username}_${module.title}`;
+        const isCompleted = localStorage.getItem(completedKey) === 'true';
+        if (isCompleted) {
+          const scoreKey = `finalAssessmentScore_${student.username}_${module.title}`;
+          const scoreStr = localStorage.getItem(scoreKey);
+          const score = scoreStr ? parseFloat(scoreStr) : 0;
+          if (score >= 80) {
+            passedCount++;
+          }
+        }
+      });
+
+      const totalModules = filteredModules.length;
+      let progressPercent = 0;
+      if (totalModules > 0) {
+        progressPercent = Math.round((passedCount / totalModules) * 100);
+      }
+      return progressPercent;
+    }
+
     // Render student list
     function renderStudents(filteredStudents) {
       const students = filteredStudents || loadStudents();
@@ -441,6 +469,7 @@ window.addEventListener('DOMContentLoaded', () => {
       }
 
       students.forEach(student => {
+        const academicPerformance = calculateAcademicPerformance(student);
         const div = document.createElement('div');
         div.className = 'student-item';
         div.style.border = '1px solid #ccc';
@@ -448,10 +477,10 @@ window.addEventListener('DOMContentLoaded', () => {
         div.style.marginBottom = '1rem';
         div.style.cursor = 'pointer';
         div.innerHTML = `
-          <strong>${student.username}</strong> - Grade ${student.grade}
+          <strong>${student.username}</strong> - Grade ${student.grade} - Academic Performance: ${academicPerformance}%
         `;
         div.addEventListener('click', () => {
-          showStudentAnalytics(student);
+          showStudentAnalytics(student, div);
         });
         container.appendChild(div);
       });
@@ -665,61 +694,10 @@ window.addEventListener('DOMContentLoaded', () => {
         existingAnalytics.remove();
       }
 
-      // Calculate dynamic analytics based on student's final assessment attempts and answers
-      const username = student.username;
+      // Calculate academic performance progress percent for a student
+      const academicPerformance = calculateAcademicPerformance(student);
 
-      // Load modules from localStorage
-      const modules = JSON.parse(localStorage.getItem('modules') || '[]');
-
-      // Initialize total score and max score
-      let totalCorrect = 0;
-      let totalQuestions = 0;
-
-      // Iterate over all modules for student's grade
-      modules.forEach(module => {
-        if (module.grade === student.grade) {
-          const answersKey = `finalAssessmentAnswers_${username}_${module.title}`;
-          const attemptsKey = `finalAssessmentAttempts_${username}_${module.title}`;
-          const attempts = parseInt(localStorage.getItem(attemptsKey) || '0', 10);
-          const userAnswers = JSON.parse(localStorage.getItem(answersKey) || '{}');
-
-          if (module.questions && userAnswers) {
-            let correctCount = 0;
-            module.questions.forEach((q, index) => {
-              const userAnswer = userAnswers[`answer${index + 1}`];
-              if (userAnswer && userAnswer.trim().toLowerCase() === q.answer.trim().toLowerCase()) {
-                correctCount++;
-              }
-            });
-
-            // Calculate score percentage for this module
-            let scorePercent = module.questions.length > 0 ? (correctCount / module.questions.length) * 100 : 0;
-
-            // Decrease score by 2% per re-attempt beyond the first
-            if (attempts > 1) {
-              scorePercent -= (attempts - 1) * 2;
-              if (scorePercent < 0) scorePercent = 0;
-            }
-
-            totalCorrect += scorePercent;
-            totalQuestions += 100; // max score per module is 100%
-          }
-        }
-      });
-
-      // Calculate overall academic performance capped at 50%
-      // Use scorePercent from new-dashboard localStorage divided by 50%
-      let academicPerformance = 0;
-      if (currentUser && currentUser.username) {
-        const storedScore = localStorage.getItem(`finalAssessmentScore_${username}`);
-        if (storedScore) {
-          const scorePercent = parseFloat(storedScore);
-          academicPerformance = (scorePercent / 50) * 100;
-          if (academicPerformance > 100) academicPerformance = 100;
-        }
-      }
-
-      // Determine pass/fail based on passing score 8/10 (80%)
+      // Determine pass/fail based on passing score 80%
       const passingScore = 80;
       const passed = academicPerformance >= passingScore;
 
@@ -734,7 +712,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
       // Populate analytics content with dynamic values and close button
       analyticsDiv.innerHTML = `
-        <h3>Student Analytics for ${username || 'Unknown Student'}</h3>
+        <h3>Student Analytics for ${student.username || 'Unknown Student'}</h3>
         <button id="closeAnalyticsInlineBtn" style="float: right; background-color: #f44336; color: white; border: none; border-radius: 4px; padding: 0.25rem 0.5rem; cursor: pointer;">Close</button>
         <div style="clear: both;"></div>
         <div style="margin-top: 1rem;">
