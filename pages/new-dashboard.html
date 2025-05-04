@@ -317,9 +317,11 @@
           return;
         }
 
-        // Retrieve attempt count
-        const attemptKey = `finalAssessmentAttempts_${currentUser.username}`;
-        const attempts = parseInt(localStorage.getItem(attemptKey) || '0', 10);
+        // Toggle visibility of assessment results container
+        if (assessmentResultsContainer.style.display === 'block') {
+          assessmentResultsContainer.style.display = 'none';
+          return;
+        }
 
         // Load modules from localStorage
         const modules = JSON.parse(localStorage.getItem('modules') || '[]');
@@ -331,8 +333,6 @@
           return;
         }
 
-        const module = filteredModules[0];
-
         // Retrieve user's answers from localStorage
         const userAnswersKey = `finalAssessmentAnswers_${currentUser.username}`;
         const userAnswers = JSON.parse(localStorage.getItem(userAnswersKey) || '{}');
@@ -342,29 +342,37 @@
           return;
         }
 
-        // Calculate score
-        let correctCount = 0;
-        module.questions.forEach((q, index) => {
-          const userAnswer = userAnswers[`answer${index + 1}`];
-          if (userAnswer && userAnswer.trim().toLowerCase() === q.answer.trim().toLowerCase()) {
-            correctCount++;
+        // Clear previous results
+        assessmentScoreDiv.innerHTML = '';
+
+        // Iterate over each module and calculate score separately
+        filteredModules.forEach(module => {
+          let correctCount = 0;
+          module.questions.forEach((q, index) => {
+            const userAnswer = userAnswers[`${module.title}_answer${index + 1}`] || userAnswers[`answer${index + 1}`];
+            if (userAnswer && userAnswer.trim().toLowerCase() === q.answer.trim().toLowerCase()) {
+              correctCount++;
+            }
+          });
+
+          const totalQuestions = module.questions.length;
+          const scorePercent = ((correctCount / totalQuestions) * 100).toFixed(2);
+
+          // Append each module's result
+          const moduleResultHTML = `
+            <div style="border: 1px solid #2980b9; border-radius: 6px; padding: 1rem; margin-bottom: 1rem; background: #e0f7fa;">
+              <h4>Module: ${module.title}</h4>
+              <p>You scored ${correctCount} out of ${totalQuestions} questions correctly.</p>
+              <p>Percentage: ${scorePercent}%</p>
+            </div>
+          `;
+          assessmentScoreDiv.innerHTML += moduleResultHTML;
+
+          // Save scorePercent in localStorage for teacher dashboard use per module
+          if (currentUser && currentUser.username) {
+            localStorage.setItem(`finalAssessmentScore_${currentUser.username}_${module.title}`, scorePercent);
           }
         });
-
-        const totalQuestions = module.questions.length;
-        const scorePercent = ((correctCount / totalQuestions) * 100).toFixed(2);
-
-        // Display score and attempts
-        assessmentScoreDiv.innerHTML = `
-          <p>You scored ${correctCount} out of ${totalQuestions} questions correctly.</p>
-          <p>Percentage: ${scorePercent}%</p>
-          <p>Number of re-attempts: ${attempts}</p>
-        `;
-
-        // Save scorePercent in localStorage for teacher dashboard use
-        if (currentUser && currentUser.username) {
-          localStorage.setItem(`finalAssessmentScore_${currentUser.username}`, scorePercent);
-        }
 
         // Show the results container and hide the questions container
         assessmentResultsContainer.style.display = 'block';
@@ -374,6 +382,13 @@
       // Modify final assessment form submission to save answers
       finalAssessmentForm.addEventListener('submit', (e) => {
         e.preventDefault();
+
+        // Confirmation dialog before submission
+        const confirmSubmit = confirm("Do you want to submit your answer?");
+        if (!confirmSubmit) {
+          return;
+        }
+
         finalAssessmentMessage.style.color = 'green';
         finalAssessmentMessage.textContent = 'Your answers have been submitted. Thank you!';
 
@@ -384,25 +399,31 @@
           answers[key] = value;
         }
         if (currentUser && currentUser.username) {
-          localStorage.setItem(`finalAssessmentAnswers_${currentUser.username}`, JSON.stringify(answers));
-          localStorage.setItem(`finalAssessmentCompleted_${currentUser.username}`, 'true');
+          const currentModule = finalAssessmentForm.getAttribute('data-current-module');
+          localStorage.setItem(`finalAssessmentAnswers_${currentUser.username}_${currentModule}`, JSON.stringify(answers));
+          localStorage.setItem(`finalAssessmentCompleted_${currentUser.username}_${currentModule}`, 'true');
 
-          // Increment final assessment attempts count
-          const attemptKey = `finalAssessmentAttempts_${currentUser.username}`;
+          // Increment final assessment attempts count per module
+          const attemptKey = `finalAssessmentAttempts_${currentUser.username}_${currentModule}`;
           let attempts = parseInt(localStorage.getItem(attemptKey) || '0', 10);
           attempts += 1;
           localStorage.setItem(attemptKey, attempts.toString());
+
+          // Disable the Take Final Assessment button immediately
+          const takeButtons = document.querySelectorAll('.takeFinalAssessmentModuleBtn');
+          takeButtons.forEach(btn => {
+            if (btn.getAttribute('data-module-title') === currentModule) {
+              btn.disabled = true;
+              btn.style.opacity = '0.6';
+              btn.style.cursor = 'not-allowed';
+              btn.textContent = 'Assessment Completed';
+            }
+          });
         }
 
         finalAssessmentForm.reset();
         // Hide the questions container
         finalAssessmentQuestionsContainer.style.display = 'none';
-        // Disable the Take Final Assessment button
-        /*
-        takeFinalAssessmentBtn.disabled = true;
-        takeFinalAssessmentBtn.style.opacity = '0.6';
-        takeFinalAssessmentBtn.style.cursor = 'not-allowed';
-        */
       });
 
       // Quick Actions content switching based on tab clicks
@@ -519,12 +540,20 @@
               moduleDiv.style.border = '1px solid #ccc';
               moduleDiv.style.padding = '0.5rem';
               moduleDiv.style.marginBottom = '0.5rem';
+
+              // Check if user has completed this module's final assessment
+              const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+              const completedKey = `finalAssessmentCompleted_${currentUser.username}_${module.title}`;
+              const isCompleted = localStorage.getItem(completedKey) === 'true';
+
               moduleDiv.innerHTML = `
                 <strong>Title:</strong> ${module.title}<br/>
                 <strong>Description:</strong> ${module.description}<br/>
                 <strong>Grade:</strong> ${module.grade}<br/>
                 <button class="downloadModuleBtn" data-file="${encodeURIComponent(module.fileData)}" data-filename="${module.title}.pdf">Download Module File</button>
-                <button class="takeFinalAssessmentModuleBtn" data-module-title="${module.title}">Take Final Assessment</button>
+                <button class="takeFinalAssessmentModuleBtn" data-module-title="${module.title}" ${isCompleted ? 'disabled style="opacity: 0.6; cursor: not-allowed;"' : ''}>
+                  ${isCompleted ? 'Assessment Completed' : 'Take Final Assessment'}
+                </button>
               `;
               modulesList.appendChild(moduleDiv);
             });
