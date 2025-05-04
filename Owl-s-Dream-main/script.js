@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
       { question: "What is the value of the 7 in 7,234?", answers: ["7000", "700", "70", "7"], correct: "7000" },
       { question: "Identify the place value of 6 in 6,789.", answers: ["6", "60", "600", "6000"], correct: "6000" },
       { question: "In 4,061,829, what is the place value of 6?", answers: ["Ten thousands", "Millions", "Thousands", "Hundred thousands"], correct: "Hundred thousands" },
-      { question: "What is the value of the digit 1 in 7,814,203?", answers: ["6", "25", "600", "6000"], correct: "25" },
+      { question: "What is the value of the digit 1 in 7,814,203?", answers: ["1,000", "10,000", "100", "100,000"], correct: "10,000" },
       { question: "What is the place value of the 2 in 2,402,305?", answers: ["Millions", "Ten thousands", "Thousands", "Hundred thousands"], correct: "Hundred thousands" },
       { question: "What is the place value of 7 in 7,032,814?", answers: ["700,000", "7,000,000", "70,000", "7,000"], correct: "7,000,000" },
       { question: "In 3,480,120, what is the value of the digit 4?", answers: ["400,000", "4,000,000", "4,000", "40,000"], correct: "400,000" },
